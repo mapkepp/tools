@@ -12,15 +12,13 @@
 
 ## Что необходимо сделать в интерфейсах владельца
 
-### A. GitHub Pages — ОБЯЗАТЕЛЬНО
+### A. GitHub Pages — ЗАПУЩЕНО
 
-1. Открыть https://github.com/mapkepp/tools/settings/pages
-2. В Build and deployment выбрать **Source → GitHub Actions** (не Deploy from a branch).
-3. После включения нажать **Re-run jobs** для https://github.com/mapkepp/tools/actions/runs/39791794077 или запустить workflow вручную: https://github.com/mapkepp/tools/actions/workflows/pages.yml
-4. Проверить https://mapkepp.github.io/tools/ (HTTP 200).
-5. Проверить работу сайта в Safari на iPhone.
-
-**Проверено:** репозиторий и workflow созданы, но первый деплой завершился FAIL с текстом `Get Pages site failed / Not Found`. REST API GitHub Pages также отвечает HTTP 404: публикация **не включена**. Подключённые GitHub-инструменты позволяют управлять файлами и Actions, но не имеют операции изменения настройки Pages; облачный браузер не авторизован в GitHub. Включение Pages в интерфейсе требует один раз прав владельца. Дальнейшие push в main публикуются автоматически.
+- [x] Основной URL https://mapkepp.github.io/tools/ возвращает HTTP 200.
+- [x] Проверенный SHA-256 опубликованного HTML совпал с файлом в `main` — `a868822214064227cf851a211dec9a17e75882bff68acc1c922979d8db14289d` (22.10.2026).
+- [x] GitHub Actions `.github/workflows/pages.yml` автоматически стартует при изменениях `index.html`, `assets/**` и workflow в `main`.
+- [x] Установка платного хостинга и включение вручную для каждого изменения не нужны.
+- [ ] Последующие автоматические деплои и совместимость iOS необходимо контролировать: часть прежних Actions была в очереди на момент проверки.
 
 ### B. Яндекс OAuth — ОБЯЗАТЕЛЬНО для безопасного входа пользователей
 
