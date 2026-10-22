@@ -25,7 +25,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <header><a class="brand" href="../">← MAPKEPP TOOLS</a><span class="pill">Бесплатно · Без регистрации Mapkepp</span></header>
 <h1>Выберите устройство. Создайте команду для iPhone.</h1>
 <p class="lead muted">Никаких непонятных ID: загружаем список умного дома, показываем дома, комнаты, устройства, группы и сценарии. Затем выбираем действие и скачиваем Apple Команду.</p>
-<div class="notice" id="securityNotice">Для получения устройств сайт использует отдельный защищённый обработчик запросов. Ваш OAuth-токен не записывается в GitHub и не отправляется на сервис подписи команд. Если обработчик ещё не подключён, остаётся вариант импорта JSON с iPhone.</div>
+<div class="notice" id="securityNotice">Для загрузки списка домов, устройств и сценариев используется защищённый обработчик API. Токен не публикуется в GitHub и не передаётся сервису подписи команд. Пока обработчик не развёрнут, тестовый пример доступен, но реальный дом загрузить нельзя.</div>
 <div class="layout"><div>
 <section class="card" id="connect">
 <h2><span class="stepnum">1</span> Подключите свой Яндекс Умный дом</h2>
@@ -46,15 +46,15 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <small class="hint" id="loadDetail">Подождите завершения запроса.</small>
 </div>
 <div id="backendStatus" class="hint" aria-live="polite" style="margin:8px 0"></div>
-<div class="divider"></div>
-<p class="hint"><strong>Запасной способ, если серверное подключение недоступно:</strong> получите список с iPhone и вставьте JSON.</p>
-<div class="flex"><a class="btn" id="helperLink" href="../ios/Yandex_Home_Discovery.shortcut">📱 Получить список на iPhone</a><button id="pasteButton" type="button">Вставить из буфера</button></div>
-<p class="hint">Команда-помощник обращается к официальному API Яндекса с iPhone и копирует сведения о доме. Токен вводится при установке помощника на самом iPhone. Если авторизация открыла страницу Яндекса с кодом вместо токена, её настройка ещё не завершена; используйте инструкции ниже. Импортируйте полученный JSON ниже.</p>
-<label for="dataFile">Загрузить JSON-файл с перечнем устройств</label>
+<details id="advancedImport" class="notice" style="margin-top:15px">
+<summary>Дополнительно: импортировать ранее сохранённый JSON</summary>
+<p class="hint">Этот способ необязателен. Он предназначен для диагностики или переноса уже полученного перечня устройств. Устанавливать отдельную iPhone-команду для обычной работы конструктора не требуется.</p>
+<label for="dataFile">Выбрать JSON-файл</label>
 <input id="dataFile" type="file" accept=".json,application/json,text/plain">
-<details><summary>Есть JSON в буфере? Вставьте текст</summary>
-<textarea id="dataText" spellcheck="false" placeholder='{"status":"ok","households":[...],"rooms":[...],"devices":[...],"groups":[...],"scenarios":[...]}'></textarea>
-<button type="button" id="parseButton">Показать мой умный дом</button>
+<div class="flex"><button id="pasteButton" type="button">Вставить JSON из буфера</button></div>
+<label for="dataText">Или вставить JSON вручную</label>
+<textarea id="dataText" spellcheck="false" placeholder='{"status":"ok","households":[],"rooms":[],"devices":[],"groups":[],"scenarios":[]}'></textarea>
+<button type="button" id="parseButton">Показать импортированные объекты</button>
 </details>
 <div class="flex" style="margin-top:10px"><button type="button" id="demoButton">Посмотреть пример, как это работает</button><button id="clearButton" type="button">Очистить данные</button></div>
 <div id="status" class="notice" role="status" aria-live="polite">Пока данные не загружены.</div>
