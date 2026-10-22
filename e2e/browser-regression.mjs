@@ -1,6 +1,7 @@
 import {chromium} from "playwright";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
+import {readFile} from "node:fs/promises";
 
 const base="https://mapkepp.github.io/tools/studio/";
 const id="e5942ee8886149dfadc84fa3bc89049a";
@@ -180,6 +181,15 @@ try{
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  assert.equal(await page.locator("button.item[data-id='light']").count(),0);
  assert.match(await page.locator("#status").innerText(),/Токен удалён/);
+ const downloadedJSON=await readFile(await exported.path());
+ const exportedInventory=JSON.parse(downloadedJSON.toString("utf8"));
+ assert.equal(exportedInventory.devices.length,1);
+ assert.ok(!downloadedJSON.toString("utf8").includes("synthetic-fake-oauth-token-123456"));
+ await page.locator("#dataFile").setInputFiles({name:"saved-inventory.json",mimeType:"application/json",buffer:downloadedJSON});
+ await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
+ await page.locator("#clearButton").click();
+ assert.equal(await page.locator("button.item[data-id='light']").count(),0);
+ console.log("PASS: exported inventory JSON re-imported from a local file without sending a new request");
  await page.locator("#restoreInventoryBrowser").click();
  await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
