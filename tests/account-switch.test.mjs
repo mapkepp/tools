@@ -63,18 +63,22 @@ test("Yandex OAuth account switch discards old token and forces account selectio
   assert.equal(element("oauthToken").value,"");
   assert.equal(store.has("mapkepp.yandex.oauth.tmp"),false);
   assert.equal(element("accountInfo").hidden,true);
-  assert.equal(store.get("mapkepp.yandex.oauth.consent"),"yes");
+  assert.equal(store.get("mapkepp.yandex.oauth.consent.e5942ee8886149dfadc84fa3bc89049a"),"yes");
+  assert.equal(store.has("mapkepp.yandex.oauth.tmp"),false);
+  assert.equal(element("oauthToken").readOnly,true);
 });
 
 test("no token is declared validated before the Yandex API returns success", async () => {
   const app=await read("studio/app.js");
   const callback=await read("oauth/callback.html");
-  assert.match(app,/Токен получен от Яндекса, но ещё не проверен по API/);
+  assert.match(app,/Токен нового Яндекс-приложения получен, но ещё не проверен API/);
   assert.match(app,/tokenCheck\("Токен подтверждён API Яндекс Умного дома/);
   assert.match(app,/Выбрать другой аккаунт/);
   assert.match(callback,/invalidToken/);
   assert.match(callback,/expires_in/);
   assert.match(callback,/iot:view/);
+  assert.match(callback,/TOKEN_TIME_KEY/);
+  assert.match(app,/TEMP_TOKEN_KEY="mapkepp.yandex.oauth.tmp."\+OAUTH_CLIENT_ID/);
   const inline=callback.match(/<script>([\s\S]*?)<\/script>/)?.[1];
   assert.ok(inline);
   assert.doesNotThrow(()=>new vm.Script(inline));
