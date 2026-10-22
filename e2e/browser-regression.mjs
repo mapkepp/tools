@@ -84,7 +84,7 @@ try{
  assert.equal(await home.locator('a[href="./studio/"]').count()>0,true);
  await home.locator("#targetId").fill("synthetic-kitchen-light");
  await home.locator("#capability").selectOption("on");
- assert.match(await home.locator("#previewPath").innerText(),/synthetic-kitchen-light/);
+ assert.match(await home.locator("#preview").innerText(),/synthetic-kitchen-light/);
  await home.locator("#capability").selectOption("off");
  assert.match(await home.locator("#preview").innerText(),/false/);
  assert.equal(homepageErrors.length,0,"Classic homepage should not throw JavaScript errors");
