@@ -37,6 +37,12 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 </div>
 <label for="oauthToken">Способ 2. Вставить полученный OAuth-токен</label>
 <input id="oauthToken" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Вставьте токен Яндекса — он будет скрыт" aria-describedby="tokenHelp">
+<div class="flex"><button type="button" id="copyToken" title="Скопировать токен только в буфер вашего устройства">📋 Скопировать мой токен</button><button type="button" id="revealToken">Показать / скрыть</button></div>
+<p class="hint">Буфер обмена содержит действующий ключ доступа: после использования лучше очистить его. Не отправляйте токен в сообщения и чужие чаты.</p>
+<div id="accountInfo" class="notice" hidden style="display:flex;align-items:center;gap:12px">
+<img id="accountAvatar" alt="Аватар аккаунта Яндекса" width="50" height="50" style="border-radius:50%;background:#394b69" hidden>
+<div><strong id="accountName">Аккаунт Яндекса</strong><div id="accountLogin" class="hint"></div></div>
+</div>
 <p id="tokenHelp" class="hint">Токен хранится только в памяти этой вкладки. В файл команды, в URL сайта и в GitHub он не попадает.</p>
 <label style="font-size:.85rem"><input type="checkbox" id="proxyConsent" style="width:auto"> Согласен передать токен для одного запроса к Яндексу через защищённый серверный обработчик Mapkepp Tools. Он не сохраняет токены или список устройств.</label>
 <div class="flex"><button class="primary" type="button" id="loadDevices">🔄 Загрузить мои устройства</button><button type="button" id="clearOAuth">Очистить токен</button></div>
@@ -79,6 +85,24 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> на внешний сервер подписи Shortcuty</label>
 <p class="hint">При подписи сервер увидит выбранный объект и действие, но не пароль и не OAuth-токен.</p>
 <div class="flex"><button type="button" class="primary" id="downloadSign">📥 Подписать и скачать</button><button type="button" id="downloadUnsigned">Скачать файл без подписи</button></div>
+<section id="sharePanel" class="notice" style="margin-top:18px">
+<h3>📲 Передать готовую настройку на iPhone</h3>
+<p class="hint">Ссылка содержит название, ID устройства и выбранное действие, <strong>но не OAuth-токен</strong>. Подходит для Windows, Android, iPad и других устройств. Получателю потребуется свой доступ к выбранному умному дому.</p>
+<div class="flex"><button id="makeShare" type="button">🔗 Создать ссылку</button><button id="copyShare" type="button" hidden>Скопировать ссылку</button><button id="showQR" type="button" hidden>Показать QR-код</button></div>
+<label for="shareUrl" id="shareUrlLabel" hidden>Ссылка на настроенную команду</label><input id="shareUrl" type="text" readonly hidden aria-label="Ссылка на конфигурацию команды">
+<div id="qrPanel" hidden><div id="qrTarget" style="padding:14px;background:white;display:inline-block;border-radius:12px;max-width:100%"></div><p class="hint">Отсканируйте QR-код камерой iPhone и откройте ссылку в Safari. Дальше нажмите «Подписать и скачать».</p></div>
+<p id="shareStatus" class="hint" role="status"></p>
+</section>
+<details id="dangerShare" class="notice warning" style="margin-top:12px">
+<summary>⚠️ Особый режим: команда со встроенным токеном</summary>
+<p><strong>Опасно!</strong> Любой обладатель такого файла сможет управлять вашими устройствами Яндекса. Файл содержит ваш личный токен в читаемом виде; при подписи он будет передан внешнему сервису Shortcuty. Это не подходит для публичной публикации.</p>
+<label><input id="dangerConsent1" type="checkbox" style="width:auto"> Понимаю, что получатель получит доступ к моему умному дому.</label>
+<label><input id="dangerConsent2" type="checkbox" style="width:auto"> Согласен передать токен внешнему сервису подписи Shortcuty и доверенному получателю файла.</label>
+<label for="dangerPhrase">Для подтверждения введите <code>ПЕРЕДАТЬ ДОСТУП</code></label>
+<input id="dangerPhrase" type="text" autocomplete="off" placeholder="ПЕРЕДАТЬ ДОСТУП">
+<button type="button" id="downloadDanger">🔒 Создать личную команду со встроенным токеном</button>
+<p class="hint">Такая команда не попадёт в GitHub, ссылку или QR-код. Подписанный файл получите только в открывшейся вкладке сервиса подписи.</p>
+</details>
 <p class="hint">После установки команды iPhone предложит вам один раз ввести собственный OAuth-токен, если он ещё не сохранён. На сайт токен не передаётся.</p>
 </div>
 </section>
@@ -87,5 +111,5 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p class="muted">Донаты — это добровольные пожертвования. Они не открывают никакого дополнительного функционала и не дают преимуществ. Весь функционал доступен сразу всем полностью бесплатно, независимо от пожертвований.</p>
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
-<footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен однократно передаётся защищённому обработчику для обращения к API Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a></footer>
-</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-7" defer></script></body></html>
+<footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен однократно передаётся защищённому обработчику для обращения к API Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
+</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-8" defer></script><script src="./share.js?v=20261022-8" defer></script></body></html>
