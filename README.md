@@ -18,6 +18,14 @@
 - The device studio receives an OAuth token through Yandex ID or optional manual input. The signed iPhone Shortcut separately prompts for a token at import. The unsigned Shortcut contains **no token** but does contain the selected object ID, which is disclosed to Shortcuty when signing.
 - Experimental VPN disconnect/reconnect with explicit warning; users select their local VPN profile after importing. A failed action may leave VPN disconnected.
 
+## Share a ready-to-install iPhone Shortcut
+
+In the [Smart Home Studio](https://mapkepp.github.io/tools/studio/), choose an action and press **«Создать ссылку»**. The generated self-contained link and locally generated QR code preserve the chosen device/action across phones and computers, **without including any OAuth token**. The recipient can open it on iPhone, authorize their Yandex account, and install a signed `.shortcut`. The installation prompt includes where to obtain and copy a token. Separate **«Скопировать мой токен»** and **account name/avatar** are shown as permissions allow.
+
+The special **«команда со встроенным токеном»** option is **dangerous and opt-in only**: it requires two checked warnings, the typed phrase «ПЕРЕДАТЬ ДОСТУП» and a final browser confirmation. It sends the embedded token to external Shortcuty for signing and gives the recipient control over devices authorised by that token. It is never placed in share links, QR codes or the repository.
+
+[User guide (Russian)](docs/SHARE-AND-TOKEN-RU.md) · [Services, privacy and software credits](https://mapkepp.github.io/tools/services.html).
+
 ## Smart Home device explorer
 
 Live: https://mapkepp.github.io/tools/studio/
