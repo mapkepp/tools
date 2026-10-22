@@ -79,6 +79,12 @@ try{
  const homepageErrors=[];
  home.on("pageerror",err=>homepageErrors.push(String(err).slice(0,80)));
  await home.goto("https://mapkepp.github.io/tools/?browser-e2e=historic-shortcuts",{waitUntil:"domcontentloaded",timeout:45000});
+ await context.grantPermissions(["clipboard-read","clipboard-write"],{origin:"https://mapkepp.github.io"});
+ await home.locator("#copySampleOn").click();
+ assert.equal(await home.evaluate(()=>navigator.clipboard.readText()),"https://mapkepp.github.io/tools/examples/Kitchen_Light_ON.shortcut");
+ await home.locator("#copySampleOff").click();
+ assert.equal(await home.evaluate(()=>navigator.clipboard.readText()),"https://mapkepp.github.io/tools/examples/Kitchen_Light_OFF.shortcut");
+ console.log("PASS: separate ON/OFF share links copied without tokens");
  await home.locator("#sampleQrOn").click();
  await home.locator("#sampleQrCanvas img").waitFor({timeout:15000});
  assert.match(await home.locator("#sampleQrTitle").innerText(),/ВКЛ/);
