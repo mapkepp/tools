@@ -194,7 +194,8 @@ try{
  await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  assert.match(await page.locator("#localInventoryStatus").innerText(),/без|из браузерной копии/i);
- await page.reload({waitUntil:"domcontentloaded"});
+ // OAuth callback deliberately disables auto-restore; test a normal visit instead.
+ await page.goto(base+"?offline-cache-return=1",{waitUntil:"domcontentloaded"});
  await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  console.log("PASS: inventory auto-restores on a normal subsequent visit, without a token or network request");
