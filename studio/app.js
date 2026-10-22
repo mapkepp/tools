@@ -13,7 +13,7 @@ let busy=false;
 function proxyIsConfigured(){
   try{
     const u=new URL(backendUrl);
-    return u.protocol==="https:" && u.pathname.endsWith("/api/yandex-home") && !u.username && !u.password && !u.search && !u.hash;
+    return u.protocol==="https:" && !u.username && !u.password && !u.search && !u.hash && (u.pathname==="/api/yandex-home" || (u.hostname.endsWith(".supabase.co") && u.pathname==="/functions/v1/yandex-home"));
   }catch{return false;}
 }
 function progressStage(stage,detail,percent){
@@ -30,7 +30,7 @@ function endProgress(){
 function setBackendNotice(){
   $("backendStatus").textContent=proxyIsConfigured()
    ?"Защищённый серверный обработчик подключён. Токен используется только для чтения данных вашего дома."
-   :"Автоматическая загрузка временно недоступна: ещё не подключён серверный обработчик. Токен можно вставить, но до подключения сервера он никуда не отправится. Пока доступен импорт списка с iPhone.";
+   :"Автоматическая загрузка временно недоступна: ещё не подключён серверный обработчик. Токен можно вставить, но до подключения сервера он никуда не отправится. Автоматическая загрузка заработает после подключения обработчика. Дополнительно доступен импорт ранее сохранённого JSON.";
 }
 function asHumanError(error,statusCode){
   if(statusCode===401||error==="unauthorized")return "Яндекс отказал в доступе: токен истёк или не имеет прав iot:view. Получите новое разрешение.";
