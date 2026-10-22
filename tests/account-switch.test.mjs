@@ -72,7 +72,7 @@ test("no token is declared validated before the Yandex API returns success", asy
   const app=await read("studio/app.js");
   const callback=await read("oauth/callback.html");
   assert.match(app,/Токен нового Яндекс-приложения получен, но ещё не проверен API/);
-  assert.match(app,/tokenCheck\("Токен подтверждён API Яндекс Умного дома/);
+  assert.match(app,/tokenCheck\("Токен подтверждён API Умного дома/);
   assert.match(app,/Загрузка не завершилась\. Это не доказывает, что токен недействителен/);
   assert.match(callback,/invalidToken/);
   assert.match(callback,/expires_in/);
