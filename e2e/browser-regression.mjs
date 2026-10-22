@@ -54,6 +54,7 @@ try{
  // to the actual provider during the following step.
  const backendDiagnostics=[];
  let segmentCalls=0;
+ let simulatedInterruption=false;
  await page.route("**/functions/v1/yandex-home",async route=>{
    const mock={
      status:"ok",households:[{id:"h",name:"Тестовый дом"}],
@@ -78,6 +79,7 @@ try{
    const serialized=JSON.stringify(mock),total=Math.ceil(serialized.length/2500);
    const index=input.index;
    assert.ok(Number.isInteger(index)&&index>=0&&index<total);
+   if(index===1&&!simulatedInterruption){simulatedInterruption=true;return route.abort("failed");}
    const digest=createHash("sha256").update(serialized).digest("hex");
    const body=JSON.stringify({version:1,index,total,digest,fragment:serialized.slice(index*2500,(index+1)*2500)});
    segmentCalls++;
@@ -100,12 +102,19 @@ try{
  assert.match(diagnostics,/segment_start/);
  assert.match(diagnostics,/segment_received/);
  assert.match(diagnostics,/segment_complete/);
+ assert.match(diagnostics,/segment_retry/);
+ assert.equal(simulatedInterruption,true);
  assert.ok(segmentCalls>=2,"Multi-segment transfer expected");
  assert.match(diagnostics,/load_success/);
  assert.ok(!diagnostics.includes("synthetic-fake-oauth-token-123456"),"Diagnostic log must not contain the token");
  assert.equal(await page.locator(".load-activity .load-runner").count(),1);
  console.log("PASS: multi-segment checksum reconstruction, safe local trace, moving progress and token exclusion");
  console.log("PASS: on-page real app JavaScript renders simulated kitchen light without a profile entitlement");
+ await page.locator("#clearOAuth").click();
+ assert.equal(await page.locator("#oauthToken").inputValue(),"");
+ assert.equal(await page.locator("button.item[data-id='light']").count(),0);
+ assert.match(await page.locator("#status").innerText(),/Токен удалён/);
+ console.log("PASS: token cleanup removes previously displayed devices and cannot preserve stale inventory");
  const home=await context.newPage();
  const homepageErrors=[];
  home.on("pageerror",err=>homepageErrors.push(String(err).slice(0,80)));
