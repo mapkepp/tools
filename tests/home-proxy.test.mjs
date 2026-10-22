@@ -53,6 +53,48 @@ test("only a valid token goes to a fixed Yandex URL",async()=>{
     authorization:"Bearer "+token
   }]);
 });
+test("compact transport preserves all actionable settings and hierarchy, drops bulky unused details",async()=>{
+  const enriched={
+    status:"ok",
+    request_id:"private-upstream-id",
+    households:[{id:"home",name:"Дом"}],
+    rooms:[{id:"room",name:"Кухня",household_id:"home",devices:["light"]}],
+    devices:[{
+      id:"light",name:"Лампа",household_id:"home",room:"room",type:"devices.types.light",
+      external_id:"vendor-specific",aliases:["alternate"],
+      properties:[{type:"sensor",state:{value:"unused".repeat(12000)}}],
+      capabilities:[
+        {type:"devices.capabilities.on_off",parameters:{},last_updated:123},
+        {type:"devices.capabilities.range",parameters:{instance:"brightness",range:{min:1,max:100,precision:1},unit:"irrelevant"},state:{value:42},last_updated:123},
+        {type:"devices.capabilities.mode",parameters:{instance:"work",modes:[{value:"auto",description:"not needed"}]}},
+        {type:"devices.capabilities.color_setting",parameters:{temperature_k:{min:2500,max:6000}}},
+        {type:"devices.capabilities.toggle",parameters:{instance:"mute"}}
+      ]
+    }],
+    groups:[{id:"group",name:"Лампы",household_id:"home",devices:["light"],capabilities:[{type:"devices.capabilities.on_off",parameters:{}}]}],
+    scenarios:[{id:"scenario",name:"Вечер",is_active:false}]
+  };
+  const mocked=compiler(async()=>new Response(JSON.stringify(enriched),{status:200,headers:{"content-type":"application/json"}}),{info(){}},AbortSignal);
+  const response=await mocked.fetch(request("POST",origin,{access_token:token}));
+  const reduced=await response.json();
+  assert.equal(response.status,200);
+  assert.ok(JSON.stringify(reduced).length<JSON.stringify(enriched).length/10);
+  assert.deepEqual(reduced.rooms[0].devices,["light"]);
+  assert.deepEqual(reduced.groups[0].devices,["light"]);
+  assert.equal(reduced.devices[0].room,"room");
+  assert.deepEqual(reduced.devices[0].capabilities.map(x=>x.type),[
+    "devices.capabilities.on_off","devices.capabilities.range",
+    "devices.capabilities.mode","devices.capabilities.color_setting"
+  ]);
+  assert.equal(reduced.devices[0].capabilities[1].parameters.range.max,100);
+  assert.equal(reduced.devices[0].capabilities[1].state.value,42);
+  assert.deepEqual(reduced.devices[0].capabilities[2].parameters.modes,[{value:"auto"}]);
+  assert.equal(reduced.devices[0].capabilities[3].parameters.temperature_k.max,6000);
+  assert.equal(reduced.scenarios[0].is_active,false);
+  assert.equal(reduced.devices[0].external_id,undefined);
+  assert.equal(reduced.request_id,undefined);
+  assert.equal(JSON.stringify(reduced).includes("unused"),false);
+});
 test("reject bad token and bad origin without contacting Yandex",async()=>{
   requested.length=0;
   const invalid=await app.fetch(request("POST",origin,{access_token:"short"}));
