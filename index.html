@@ -50,7 +50,8 @@ details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-to
   <div class="buttons" style="margin:8px 0">
     <button class="btn" type="button" id="sampleQrOn" aria-expanded="false" aria-controls="sampleQrPanel">Показать QR · ВКЛ</button>
     <button class="btn" type="button" id="sampleQrOff" aria-expanded="false" aria-controls="sampleQrPanel">Показать QR · ВЫКЛ</button>
-    <button class="btn" type="button" id="copySampleUrl">Скопировать ссылку на пример</button>
+    <button class="btn" type="button" id="copySampleOn">Копировать ссылку · ВКЛ</button>
+    <button class="btn" type="button" id="copySampleOff">Копировать ссылку · ВЫКЛ</button>
   </div>
   <div id="sampleQrPanel" class="banner" hidden aria-live="polite">
     <div><strong id="sampleQrTitle">QR-код готовой команды</strong></div>
@@ -277,10 +278,13 @@ update();
     }catch(e){setStatus(String(e?.message||e));}
   }
   for(const id of Object.keys(files))get(id).addEventListener("click",()=>display(id));
-  get("copySampleUrl").addEventListener("click",async()=>{
+  for(const [button,file,name] of [
+    ["copySampleOn","Kitchen_Light_ON.shortcut","ВКЛ"],
+    ["copySampleOff","Kitchen_Light_OFF.shortcut","ВЫКЛ"]
+  ])get(button).addEventListener("click",async()=>{
     try{
-      await navigator.clipboard.writeText(new URL("Kitchen_Light_ON.shortcut",base).href);
-      setStatus("Ссылка на образец ВКЛ скопирована. Она не содержит OAuth-токен.");
+      await navigator.clipboard.writeText(new URL(file,base).href);
+      setStatus("Ссылка на образец "+name+" скопирована. Она не содержит OAuth-токен.");
     }catch{setStatus("Не получилось скопировать ссылку. Используйте кнопку скачивания выше.");}
   });
 })();
