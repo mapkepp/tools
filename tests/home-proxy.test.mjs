@@ -37,6 +37,9 @@ test("only a valid token goes to a fixed Yandex URL",async()=>{
   const r=await app.fetch(request("POST",origin,{access_token:token}));
   assert.equal(r.status,200);
   assert.equal(r.headers.get("cache-control").includes("no-store"),true);
+  assert.equal(r.headers.get("access-control-expose-headers").includes("X-Mapkepp-Body-Bytes"),true);
+  assert.equal(Number(r.headers.get("x-mapkepp-body-bytes")),new TextEncoder().encode(JSON.stringify(yandexResponse)).byteLength);
+  assert.ok(Number(r.headers.get("x-mapkepp-upstream-ms"))>=0);
   const j=await r.json();
   assert.deepEqual(j,yandexResponse);
   assert.equal(JSON.stringify(j).includes(token),false);
