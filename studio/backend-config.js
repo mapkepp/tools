@@ -1,5 +1,4 @@
-// Public, non-secret configuration for the browser frontend.
-// Leave blank until the owner's serverless proxy is deployed and HTTPS-verified.
-// Example only after verified deployment: https://YOUR-OWN-APP.vercel.app/api/yandex-home
-// NEVER put an OAuth token or client_secret here.
-window.MAPKEPP_HOME_API_URL = "";
+// Public HTTPS address of the read-only Yandex Smart Home gateway.
+// This URL contains NO OAuth tokens and no Supabase privileged keys.
+// The gateway forwards a token only once per user-authorized request.
+window.MAPKEPP_HOME_API_URL = "https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/yandex-home";
