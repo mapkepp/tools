@@ -1,0 +1,5 @@
+# Public, read-only discovery of the caller's own Yandex Smart Home entities.
+# This function performs custom authorization by forwarding the caller's Yandex
+# OAuth token to the fixed Yandex API. No Supabase JWT or database is used.
+[functions.yandex-home]
+verify_jwt = false
