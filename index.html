@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapkepp Tools — конструктор команд умного дома</title>
+<meta name="description" content="Бесплатный конструктор Apple Команд для Яндекс Умного дома. Без регистрации, без передачи OAuth-токенов и платных ограничений.">
+<style>
+:root{color-scheme:dark;--bg:#0c1220;--panel:#161e30;--panel2:#1a2841;--border:#34415c;--text:#f4f7fd;--muted:#b3c0d6;--accent:#80edbd;--violet:#c2abff}
+*[hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#253557 0%,transparent 48%),var(--bg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--text)}
+a{color:#b4d4ff}a:hover{text-decoration:none}.shell{max-width:1100px;margin:auto;padding:0 20px}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)}.brand{font-size:1.1rem;font-weight:800;color:var(--text);text-decoration:none}.brand span{color:var(--accent)}
+nav{display:flex;gap:16px;font-size:.9rem}nav a{text-decoration:none;color:var(--muted)}
+.hero{padding:46px 0 26px}.eyebrow{letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-size:.76rem;font-weight:800}.hero h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.15;max-width:780px;letter-spacing:-.04em;margin:12px 0}.hero p{max-width:710px;color:var(--muted);font-size:1.08rem}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.pill{border:1px solid var(--border);background:#202b42;border-radius:30px;padding:6px 13px;font-size:.82rem;color:#dbe6f7}
+.layout{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(300px,.84fr);gap:22px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 20px 60px #0002}
+h2{font-size:1.4rem;line-height:1.3;margin:0 0 8px}h3{font-size:1.05rem}.sub{color:var(--muted);margin:0 0 24px;font-size:.92rem}
+label.field{display:block;font-size:.91rem;font-weight:670;margin-bottom:17px}.field small{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+input,select,textarea{font:inherit;color:var(--text);background:#0c1424;border:1px solid #4c5871;border-radius:11px;width:100%;padding:12px;margin-top:7px;outline-offset:2px}input:focus,select:focus{outline:2px solid var(--accent)}input[type=checkbox]{width:auto;margin:0 8px 0 0;accent-color:var(--accent)}
+.control{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;border-radius:12px;border:1px solid var(--border);background:var(--panel2);margin:12px 0}.control label{cursor:pointer}.control small{display:block;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:12px;border:1px solid #7b8ba2;background:#273650;color:white;padding:12px 17px;font-weight:760;text-decoration:none;font-size:.92rem}.btn:hover{background:#334969}.btn.primary{background:var(--accent);color:#0a2020;border-color:var(--accent)}.btn.primary:hover{background:#b4fbdc}.btn:disabled{opacity:.45;cursor:not-allowed}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+#notice{min-height:25px;margin-top:12px;color:var(--accent);font-size:.91rem}.error{color:#ffb4ad!important}
+pre{white-space:pre-wrap;word-break:break-word;background:#0c1424;color:#d5f8e8;border:1px solid #36455d;padding:16px;border-radius:12px;font-size:.79rem;max-height:480px;overflow:auto}
+aside p,aside li{color:var(--muted);font-size:.93rem}aside ol{padding-left:20px}aside li{margin:9px 0}.separ{border-top:1px solid var(--border);margin:26px 0}
+.banner{margin:22px 0;background:#1b2b38;border:1px solid #3b6b62;padding:15px 18px;border-radius:14px}.banner strong{color:#a7ffd8}
+footer{border-top:1px solid var(--border);padding:32px 0 54px;margin-top:45px;color:var(--muted);font-size:.89rem}
+code{color:#b7e9ff} .footerline{display:flex;gap:17px;flex-wrap:wrap}.support{background:#221d3b;border:1px solid #564770;padding:21px;border-radius:16px;margin-top:20px}.support h2{margin-bottom:6px}.support p{color:#c7bcdf}
+details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-top:14px;color:var(--muted)}summary{cursor:pointer;font-weight:650;color:var(--text)}
+@media(max-width:790px){.layout{grid-template-columns:1fr}.panel{padding:19px}.hero{padding-top:30px}}
+</style></head>
+<body><div class="shell">
+<header><a class="brand" href="./">⌘ <span>MAPKEPP</span> TOOLS</a><nav><a href="#generator">Конструктор</a><a href="#privacy">Безопасность</a><a href="#support">Поддержка</a></nav></header>
+<section class="hero"><div class="eyebrow">Открытые инструменты • Бесплатно для всех</div>
+<h1>Создайте команду для умного дома за пару минут</h1>
+<p>Управляйте устройствами, группами и сценариями через приложение Apple «Команды». Без платных функций, обязательной регистрации и передачи пароля или OAuth-токена сайту.</p>
+<div class="pills"><span class="pill">iPhone • iPad</span><span class="pill">Яндекс Умный дом API</span><span class="pill">Без рекламы</span><span class="pill">Открытый код</span></div></section>
+<main id="generator" class="layout"><section class="panel">
+<h2>Конструктор Apple Команды</h2><p class="sub">Введите ID объекта из вашего умного дома. Сайт создаст файл команды для iPhone.</p>
+<form id="builder" novalidate>
+<label class="field">Название команды<input id="title" maxlength="64" value="Свет на кухне — ВКЛ" required autocomplete="off"></label>
+<label class="field">Объект управления<select id="target"><option value="device">Устройство</option><option value="group">Группа устройств</option><option value="scenario">Сценарий Яндекса</option></select></label>
+<label class="field"><span id="idLabel">ID устройства</span><input id="targetId" placeholder="Идентификатор из Яндекс Умного дома" maxlength="160" required autocomplete="off" spellcheck="false"><small>Используйте идентификатор из официального API. Не вводите сюда OAuth-токен.</small></label>
+<div id="capabilityBox">
+<label class="field">Действие<select id="capability"><option value="on">Включить</option><option value="off">Выключить</option><option value="brightness">Установить яркость</option></select></label>
+<label class="field" id="brightnessWrap" hidden>Яркость (%)<input id="brightness" type="number" min="0" max="100" step="1" value="50"></label></div>
+<div class="control"><input id="vpn" type="checkbox"><label for="vpn"><strong>Экспериментальное авто-переключение VPN</strong><small>Команда на время запроса отключит VPN, затем попытается восстановить. При ошибке VPN может остаться отключённым. Требуется выбрать профиль в редакторе iPhone.</small></label></div>
+<div class="control"><input id="consent" type="checkbox"><label for="consent"><strong>Разрешаю передать созданную команду сервису подписи</strong><small>Только после нажатия «Подписать и скачать». Файл может содержать введённый ID устройства/сценария, но никогда OAuth-токен. Используется сторонний сервис Shortcuty, независимый от нашего сайта.</small></label></div>
+<div class="buttons"><button class="btn primary" type="button" id="sign">Подписать и скачать</button><button class="btn" type="button" id="unsigned">Скачать без подписи</button><button class="btn" type="button" id="copy">Скопировать JSON</button></div>
+<div role="status" aria-live="polite" id="notice"></div></form></section>
+<aside class="panel"><h2>Что получится</h2><p class="sub">Предпросмотр HTTP-запроса. OAuth-токен вводится непосредственно на iPhone при добавлении команды.</p>
+<div><strong id="previewMethod">POST</strong> <code id="previewPath"></code></div><pre id="preview" aria-label="JSON запроса"></pre>
+<div class="banner"><strong>Ваш OAuth-токен не нужен этому сайту.</strong><div>Мы не просим его, не сохраняем и не передаём серверу подписи. Пользователь вводит токен уже на своём iPhone.</div></div>
+<h3>Установка на iPhone</h3><ol><li>Создайте команду и скачайте подписанный файл.</li><li>Откройте файл в приложении «Команды».</li><li>Введите собственный OAuth-токен с доступом <code>iot:control</code> без <code>Bearer</code>.</li><li>Если включили авто-VPN — выберите свой VPN-профиль для отключения и повторного подключения.</li><li>Проверьте действие на реальном устройстве.</li></ol>
+<details><summary>Что, если подпись не скачалась?</summary><p>Сервис Shortcuty является независимым сторонним провайдером и может быть недоступен. Скачайте неподписанный файл, затем подпишите его через <a href="https://sign.shortcuty.app/" target="_blank" rel="noopener noreferrer">страницу Shortcuty</a> вручную. Неподписанный файл iOS обычно не импортирует.</p></details>
+<details><summary>Почему VPN не обходится напрямую?</summary><p>Apple «Команды» не умеют выбирать сетевой маршрут для конкретного запроса. Экспериментальная опция временно отключает VPN, что уменьшает защищённость соединения. Надёжный вариант без разрыва — раздельная маршрутизация в VPN-клиенте.</p></details>
+</aside></main>
+<section id="privacy" class="panel" style="margin-top:22px"><h2>Прозрачность и права</h2><p class="sub">Mapkepp Tools — независимый неофициальный проект, не связанный с ООО «Яндекс» или Apple. Названия компаний используются для описания совместимости. Сайт не использует их логотипы.</p>
+<p>Страница работает без аналитики, рекламы, cookies, регистрации или хранения введённых параметров на нашем сервере. Все расчёты происходят в браузере. При выборе подписи файл отправляется на <a href="https://sign.shortcuty.app/" target="_blank" rel="noopener noreferrer">sign.shortcuty.app</a>; ознакомьтесь с правилами этого сервиса. При посещении GitHub Pages действуют условия GitHub.</p>
+<p>Поддерживаются официальные методы Яндекс API; каждый пользователь отвечает за правомерность доступа к своим устройствам. Не публикуйте токены в комментариях, скриншотах, ссылках и репозиториях.</p>
+<p><a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-protocol" target="_blank" rel="noopener noreferrer">Документация API Яндекса ↗</a></p></section>
+<section id="support" class="support"><h2>💜 Добровольно поддержать автора</h2><p>Все инструменты бесплатны и одинаково доступны каждому. Любая поддержка — добровольный безвозмездный перевод, не оплата товара, функций, приоритета или услуг.</p>
+<button id="donateBtn" class="btn" type="button">Поддержать проект</button><p id="donateMsg" role="status" aria-live="polite" style="margin-bottom:0;font-size:.88rem">Реквизиты ещё не опубликованы. Кнопка не принимает платежи.</p></section>
+<footer><div class="footerline"><span>© 2026 Mapkepp Tools — независимый проект</span><a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Исходный код</a><a href="https://github.com/mapkepp/tools/issues" target="_blank" rel="noopener noreferrer">Сообщить об ошибке</a></div><p>Первый выпуск: Smart Home Shortcut Studio. Следующие инструменты можно публиковать в этом каталоге, сохраняя бесплатный доступ.</p></footer></div>
+<script>
+(function(){
+'use strict';
+const E=id=>document.getElementById(id);
+const F=['title','target','targetId','capability','brightness','vpn','consent'];
+const API='https://api.iot.yandex.net/v1.0';
+const SIGN='https://sign.shortcuty.app/api/v1/sign';
+const DONATION_LINK=''; // Configure only after verifying recipient and legal/payment terms.
+const xmlEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+const uuid=()=>{if(crypto&&crypto.randomUUID)return crypto.randomUUID().toUpperCase();return 'XXXXXXXX-XXXX-4XXX-YXXX-XXXXXXXXXXXX'.replace(/[XY]/g,c=>{const n=Math.floor(Math.random()*16);return (c==='X'?n:((n&3)|8)).toString(16).toUpperCase();});};
+const tt=(v,attach)=>({WFSerializationType:'WFTextTokenString',Value:Object.assign({string:v},attach?{attachmentsByRange:attach}:{})});
+const wfDict=obj=>({WFSerializationType:'WFDictionaryFieldValue',Value:{WFDictionaryFieldValueItems:Object.keys(obj).map(k=>wfField(k,obj[k]))}});
+function wfField(k,v){
+ const f={WFKey:tt(k)};
+ if(typeof v==='string')Object.assign(f,{WFItemType:0,WFValue:tt(v)});
+ else if(typeof v==='boolean')Object.assign(f,{WFItemType:4,WFValue:{WFSerializationType:'WFNumberSubstitutableState',Value:v}});
+ else if(typeof v==='number')Object.assign(f,{WFItemType:3,WFValue:{WFSerializationType:'WFNumberSubstitutableState',Value:v}});
+ else if(Array.isArray(v))Object.assign(f,{WFItemType:2,WFValue:{WFSerializationType:'WFArrayParameterState',Value:v.map(x=>{const o=wfField('',x);delete o.WFKey;return o;})}});
+ else if(v&&typeof v==='object')Object.assign(f,{WFItemType:1,WFValue:wfDict(v)});
+ else throw Error('Неподдерживаемое значение '+k);
+ return f;
+}
+function plistVal(v){
+ if(v===null||v===undefined)throw Error('Значение plist отсутствует');
+ if(Array.isArray(v))return '<array>'+v.map(plistVal).join('')+'</array>';
+ if(typeof v==='object')return '<dict>'+Object.keys(v).map(k=>'<key>'+xmlEsc(k)+'</key>'+plistVal(v[k])).join('')+'</dict>';
+ if(typeof v==='string')return '<string>'+xmlEsc(v)+'</string>';
+ if(typeof v==='boolean')return v?'<true/>':'<false/>';
+ if(typeof v==='number'&&Number.isFinite(v))return Number.isInteger(v)?'<integer>'+v+'</integer>':'<real>'+v+'</real>';
+ throw Error('Неподдерживаемый тип plist');
+}
+function state(){
+ const target=E('target').value,cap=E('capability').value,id=E('targetId').value.trim(),title=E('title').value.trim();
+ if(!title||title.length>64)throw Error('Укажите название от 1 до 64 символов.');
+ if(!/^[A-Za-z0-9_.:\-]{3,160}$/.test(id))throw Error('ID должен содержать 3–160 символов: латиницу, цифры, точки, двоеточия, тире или подчёркивания.');
+ let url='',payload=null;
+ if(target==='scenario')url=API+'/scenarios/'+encodeURIComponent(id)+'/actions';
+ else{
+  const action=cap==='brightness'?{type:'devices.capabilities.range',state:{instance:'brightness',value:Number(E('brightness').value)}}:{type:'devices.capabilities.on_off',state:{instance:'on',value:cap==='on'}};
+  if(cap==='brightness'&&(!Number.isInteger(action.state.value)||action.state.value<0||action.state.value>100))throw Error('Яркость должна быть целым числом от 0 до 100.');
+  if(target==='device'){url=API+'/devices/actions';payload={devices:[{id,actions:[action]}]};}
+  else {url=API+'/groups/'+encodeURIComponent(id)+'/actions';payload={actions:[action]};}
+ }
+ return {id,title,target,cap,url,payload,vpn:E('vpn').checked};
+}
+function action(name,parameters){return {WFWorkflowActionIdentifier:'is.workflow.actions.'+name,WFWorkflowActionParameters:Object.assign({UUID:uuid()},parameters||{})};}
+function workflow(s){
+ const tokid=uuid(),refs={'{7, 1}':{Type:'ActionOutput',OutputUUID:tokid,OutputName:'Text'}};
+ const headers=wfDict({'Content-Type':'application/json'});
+ const authorization={WFKey:tt('Authorization'),WFItemType:0,WFValue:tt('Bearer \uFFFC',refs)};
+ headers.Value.WFDictionaryFieldValueItems.push(authorization);
+ if(!s.payload)headers.Value.WFDictionaryFieldValueItems.shift();
+ const acts=[action('gettext',{UUID:tokid,WFTextActionText:'YANDEX_OAUTH_TOKEN'})];
+ if(s.vpn){acts.push(action('vpn.set',{WFVPNOperation:'Disconnect'}));acts.push(action('delay',{WFDelayTime:2}));}
+ const params={WFURL:s.url,WFHTTPMethod:'POST',ShowHeaders:true,WFHTTPHeaders:headers};
+ if(s.payload){params.WFHTTPBodyType='JSON';params.WFJSONValues=wfDict(s.payload);}
+ acts.push(action('downloadurl',params));
+ if(s.vpn){acts.push(action('vpn.set',{WFVPNOperation:'Connect'}));acts.push(action('delay',{WFDelayTime:2}));}
+ return {
+  WFWorkflowName:s.title,WFWorkflowActions:acts,WFWorkflowClientVersion:'4033.0.4.3',
+  WFWorkflowMinimumClientVersion:900,WFWorkflowMinimumClientVersionString:'900',
+  WFWorkflowHasShortcutInputVariables:false,WFWorkflowHasOutputFallback:false,
+  WFWorkflowIcon:{WFWorkflowIconGlyphNumber:61440,WFWorkflowIconStartColor:4282601983},
+  WFWorkflowImportQuestions:[{ActionIndex:0,Category:'Parameter',ParameterKey:'WFTextActionText',Text:'Введите актуальный OAuth-токен Яндекса без слова Bearer',DefaultValue:''}],
+  WFWorkflowInputContentItemClasses:['WFStringContentItem'],WFWorkflowOutputContentItemClasses:[],
+  WFWorkflowTypes:['WFWorkflowTypeShowInSearch'],WFQuickActionSurfaces:[]
+ };
+}
+function makeFile(s){const content='<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">'+plistVal(workflow(s))+'</plist>';
+ const safe=s.title.replace(/[^A-Za-z0-9А-Яа-яЁё _-]/g,'_').slice(0,48).trim()||'Yandex_Smart_Home';
+ return new File([content],safe+'.shortcut',{type:'application/octet-stream'});
+}
+function message(s,error){E('notice').textContent=s;E('notice').classList.toggle('error',!!error);}
+function update(){
+ const target=E('target').value;
+ E('capabilityBox').hidden=target==='scenario';
+ E('brightnessWrap').hidden=target==='scenario'||E('capability').value!=='brightness';
+ E('idLabel').textContent=target==='device'?'ID устройства':target==='group'?'ID группы':'ID сценария';
+ try{
+ const s=state();
+ E('previewPath').textContent=s.url;
+ E('preview').textContent=s.payload?JSON.stringify(s.payload,null,2):'Без тела запроса (запуск сценария)';
+ }catch(err){E('previewPath').textContent='Ожидание данных';E('preview').textContent='Введите корректный ID для предпросмотра.';}
+}
+function downloadBlob(file){const href=URL.createObjectURL(file);const a=document.createElement('a');a.href=href;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),5000);}
+E('unsigned').addEventListener('click',()=>{try{const file=makeFile(state());downloadBlob(file);message('Неподписанный файл сохранён. Чтобы iPhone его импортировал, потребуется подпись.');}catch(e){message(e.message,true);}});
+E('copy').addEventListener('click',async()=>{try{const s=state(),v=JSON.stringify({method:'POST',url:s.url,body:s.payload},null,2);await navigator.clipboard.writeText(v);message('Параметры запроса скопированы. Токен отсутствует.');}catch(e){message('Копирование не удалось: '+e.message,true);}});
+E('sign').addEventListener('click',()=>{
+ try{
+  if(!E('consent').checked)throw Error('Для внешней подписи нужно отдельно согласиться на передачу файла сервису Shortcuty.');
+  const file=makeFile(state());
+  const transfer=new DataTransfer();transfer.items.add(file);
+  const form=document.createElement('form');form.method='POST';form.enctype='multipart/form-data';form.action=SIGN;form.target='_blank';form.style.display='none';
+  const inp=document.createElement('input');inp.type='file';inp.name='file';inp.files=transfer.files;form.appendChild(inp);
+  document.body.appendChild(form);form.submit();form.remove();
+  message('Отправлено на подпись. Скачивание начнётся во вкладке сервиса Shortcuty, если он доступен. Проверьте загрузки Safari.');
+ }catch(e){message(e.message,true);}
+});
+for(const id of F)E(id).addEventListener('input',update);
+for(const id of ['target','capability'])E(id).addEventListener('change',update);
+E('donateBtn').addEventListener('click',()=>{if(DONATION_LINK){window.open(DONATION_LINK,'_blank','noopener,noreferrer');}else{E('donateMsg').textContent='Платёжная ссылка пока не указана. Никакие данные карты сайт не запрашивает.';}});
+update();
+})();
+</script></body></html>
