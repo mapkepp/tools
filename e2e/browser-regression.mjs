@@ -25,7 +25,7 @@ try{
  assert.ok(share.includes("#config="));
  assert.ok(!share.includes("oauth")&&!share.includes("token"));
  await page.locator("#showQR").click();
- await page.locator("#qrTarget canvas,#qrTarget img").first().waitFor({timeout:10000});
+ await page.locator("#qrTarget img").first().waitFor({timeout:10000});
  await page.locator("#saveHistory").click();
  const history=await page.evaluate(()=>localStorage.getItem("mapkepp.studio.local.shortcuts.v1"));
  assert.ok(history?.includes("42") && !history.includes("access_token"));
