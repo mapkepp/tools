@@ -339,8 +339,11 @@ function beginYandexAuth(){
    sessionStorage.setItem(CONSENT_KEY,$("proxyConsent").checked?"yes":"no");
    sessionStorage.removeItem(TEMP_TOKEN_KEY);
    sessionStorage.removeItem(TOKEN_TIME_KEY);
+   // Preserve a ready-to-install shortcut (QR, shared link or chosen action)
+   // across the Yandex redirect. Only inert configuration, never the token.
    const cfg=new URLSearchParams(location.hash.slice(1)).get("config");
    if(cfg)sessionStorage.setItem("mapkepp.share.pending",cfg);
+   else if(window.MapkeppShare?.preserveForOAuth?.())status("Настроенная команда сохранена на время входа. После авторизации она восстановится.");
  }catch{
    status("Браузер запретил временное хранение. Разрешите его для сайта или вставьте токен вручную.",true);
    return;
@@ -349,7 +352,7 @@ function beginYandexAuth(){
  clearAccountView();
  tokenCheck("Выберите учётную запись на официальном сайте Яндекса. Старый токен очищен.");
  // Reset the displayed Yandex home; never display stale devices under the next account.
- if(!location.hash.includes("config=")){
+ if(!sessionStorage.getItem("mapkepp.share.pending")){
    data=null;selected=null;
    $("actionArea").classList.remove("open");
    render();
