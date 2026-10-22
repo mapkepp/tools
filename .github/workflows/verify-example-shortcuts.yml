@@ -24,9 +24,12 @@ jobs:
           root="https://mapkepp.github.io/tools"
           mkdir -p /tmp/mapkepp-public
           curl --fail --silent --show-error --location --retry 5 --retry-delay 3 --max-time 30 "${root}/" -o /tmp/mapkepp-public/index.html
-          grep -q 'id="generator"' /tmp/mapkepp-public/index.html
-          grep -q 'href="./studio/"' /tmp/mapkepp-public/index.html
-          grep -q 'id="sign"' /tmp/mapkepp-public/index.html
+          grep -q 'id="downloadSign"' /tmp/mapkepp-public/index.html
+          grep -q 'id="sharePanel"' /tmp/mapkepp-public/index.html
+          grep -q 'src="./frozen-2026-10-23/app.js' /tmp/mapkepp-public/index.html
+          grep -q '<base href="./studio/">' /tmp/mapkepp-public/index.html
+          test "$(git hash-object index.html)" = "92197c2ad29e31fd72cbb3d62bdef38577b09220"
+          echo "PASS: frozen homepage SHA and isolated Studio assets"
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_ON.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_ON.shortcut
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_OFF.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_OFF.shortcut
           (cd /tmp/mapkepp-public && echo 'c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355  Kitchen_Light_ON.shortcut' | sha256sum -c -)
@@ -38,4 +41,4 @@ jobs:
               assert f.read_bytes()[:4]==b"AEA1"
               print("PASS: "+action+" accessible, Apple AEA1 signed, SHA-256 match")
           PY
-          echo "PASS: homepage retains classic generator and new studio link; historical signed sample bytes remain. No real Yandex devices or tokens tested."
+          echo "PASS: homepage holds frozen Studio snapshot; historical signed example bytes remain. No real Yandex devices or tokens tested."
