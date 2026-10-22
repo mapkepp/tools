@@ -50,7 +50,10 @@ export default {
         ...(e.http!==undefined?{http:e.http}:{}),
         ...(e.code!==undefined?{code:e.code}:{})});
     }
-    for(const event of stages)traceEvent(payload.page,payload.trace,"browser_"+event.stage,event);
+    for(const event of stages){
+      const {stage,...details}=event;
+      traceEvent(payload.page,payload.trace,"browser_"+stage,details);
+    }
     return reply({ok:true,accepted:stages.length},200,origin);
   }
   if(!type.toLowerCase().startsWith("multipart/form-data"))
@@ -63,12 +66,12 @@ export default {
     step("failure",{code,http:status});
     return reply({error:code,...extra},status,origin);
   };
-  step("request_received");
   if(Number(req.headers.get("content-length")||0)>120000)
    return fail("request_too_large",413);
   let form;
   try{form=await req.formData();}catch{return fail("invalid_form",400);}
   page=cleanPage(form.get("page"));trace=cleanTrace(form.get("trace"));
+  step("request_received");
   step("multipart_decoded");
   const f=form.get("file");
   if(!(f instanceof File)||f.size<200||f.size>100000)
