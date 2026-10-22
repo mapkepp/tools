@@ -100,11 +100,13 @@ $("downloadDanger").addEventListener("click",()=>{
 // A share URL contains only inert configuration and never performs network requests by itself.
 try{
  const hash=new URLSearchParams(location.hash.slice(1));
- const encoded=hash.get("config");
+ let encoded=hash.get("config");
+ if(!encoded){try{encoded=sessionStorage.getItem("mapkepp.share.pending")||"";sessionStorage.removeItem("mapkepp.share.pending");}catch{}}
  if(encoded){
    const model=dec(encoded);
    window.MapkeppStudio.restoreShare(model);
-   showLink(location.href);
+   const target=new URL(location.origin+location.pathname);target.hash="config="+encoded;
+   showLink(target.href);
    status("Команда открыта из ссылки — параметры восстановлены. Перед скачиванием проверьте их и авторизуйтесь в своём Яндексе, если хотите использовать свою учётную запись.");
  }
 }catch(e){status("Не удалось открыть сохранённую настройку: "+e.message,true);}
