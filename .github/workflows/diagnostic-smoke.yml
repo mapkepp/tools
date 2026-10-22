@@ -1,0 +1,37 @@
+name: Minimal Yandex gateway health check (synthetic credentials only)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/diagnostic-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check gateway CORS and synthetic authentication rejection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.error, json, time
+          url='https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/yandex-home'
+          origin='https://mapkepp.github.io'
+          options=urllib.request.Request(url,method='OPTIONS',headers={'Origin':origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
+          with urllib.request.urlopen(options,timeout=15) as result:
+              assert result.status==204, 'OPTIONS must return 204'
+              assert result.headers.get('Access-Control-Allow-Origin')==origin, 'CORS origin missing'
+          body=json.dumps({'access_token':'synthetic-invalid-for-smoke-123456789'}).encode()
+          req=urllib.request.Request(url,method='POST',data=body,headers={'Origin':origin,'Content-Type':'application/json'})
+          try:
+              with urllib.request.urlopen(req,timeout=30) as result: status=result.status
+          except urllib.error.HTTPError as err: status=err.code
+          # An unauthorized synthetic token must never be granted real access.
+          assert status==401, f'Expected Yandex 401 for synthetic token, got {status}'
+          print('PASS: OPTIONS 204; origin allowed; synthetic credential denied as 401.')
+          print('No real Yandex token or data was used.')
+          PY
