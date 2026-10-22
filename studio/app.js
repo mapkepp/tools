@@ -57,14 +57,13 @@ async function loadFromYandex(){
    progressStage("Запрашиваем данные у Яндекса","Получаем дома, комнаты, устройства, группы и сценарии. Это может занять некоторое время.");
    const controller=new AbortController();
    const timeout=setTimeout(()=>controller.abort(),35000);
-   let resp;
+   let resp,raw;
    try{
      resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
        headers:{"Content-Type":"application/json"},
        cache:"no-store",referrerPolicy:"no-referrer",
        body:JSON.stringify({access_token:token}),signal:controller.signal});
    progressStage("Читаем ответ сервера","Соединение установлено. Ожидаем полную передачу данных.",65);
-   let raw;
    try{raw=await resp.text();}catch(e){
      if(controller.signal.aborted)throw Error("Время ожидания полного ответа истекло (35 секунд).");
      throw Error("Передача ответа с сервера прервалась. Проверьте подключение и VPN.");
