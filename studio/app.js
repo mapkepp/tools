@@ -418,7 +418,7 @@ window.MapkeppStudio = Object.freeze({
  },
  signWithEmbeddedToken(){
    const token=$("oauthToken").value.trim().replace(/^Bearer\s+/i,"");
-   if(!/^[a-zA-Z0-9_.~+\\/=-]{12,4096}$/.test(token))throw Error("Вставьте действительный токен в поле Яндекса.");
+   if(!new RegExp("^[A-Za-z0-9_.~+/=-]{12,4096}$").test(token))throw Error("Вставьте действительный токен в поле Яндекса.");
    return file(token);
  },
  showStatus:status
