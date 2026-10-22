@@ -8,7 +8,7 @@
 // Do not strip the hash or read its token before the SDK forwards it to the
 // exact verified origin. Ordinary same-tab OAuth continues below.
 let existingState="";
-try{existingState=sessionStorage.getItem("mapkepp.yandex.oauth.state")||"";}catch{}
+try{existingState=sessionStorage.getItem("mapkepp.yandex.oauth.state.e5942ee8886149dfadc84fa3bc89049a")||"";}catch{}
 if ((window.opener || window.parent!==window) &&
     location.hash.includes("access_token=") && !existingState) {
   const info=document.getElementById("result");
@@ -28,8 +28,10 @@ if ((window.opener || window.parent!==window) &&
   document.head.appendChild(sdk);
   return;
 }
-const TOKEN_KEY="mapkepp.yandex.oauth.tmp";
-const STATE_KEY="mapkepp.yandex.oauth.state";
+const OAUTH_CLIENT_ID="e5942ee8886149dfadc84fa3bc89049a";
+const TOKEN_KEY="mapkepp.yandex.oauth.tmp."+OAUTH_CLIENT_ID;
+const STATE_KEY="mapkepp.yandex.oauth.state."+OAUTH_CLIENT_ID;
+const TOKEN_TIME_KEY="mapkepp.yandex.oauth.issued."+OAUTH_CLIENT_ID;
 const hash=new URLSearchParams(location.hash.replace(/^#/,""));
 const query=new URLSearchParams(location.search);
 const token=hash.get("access_token")||"";
@@ -68,6 +70,7 @@ if(error){
   }else{
     try{
       sessionStorage.setItem(TOKEN_KEY,token);
+      sessionStorage.setItem(TOKEN_TIME_KEY,String(Date.now()));
       $("result").textContent="Разрешение получено. Возвращаемся в конструктор для загрузки устройств…";
       location.replace("../studio/?oauth=success");
     }catch{
