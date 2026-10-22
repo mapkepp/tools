@@ -2,7 +2,7 @@
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/png" sizes="64x64" href="./assets/siri-smart-home-icon.png"><link rel="apple-touch-icon" href="./assets/siri-smart-home-icon.png"><meta name="theme-color" content="#0c1220">
 <title>Mapkepp Tools — конструктор команд умного дома</title>
-<meta name="description" content="Бесплатный конструктор Apple Команд для Яндекс Умного дома. Без регистрации, без передачи OAuth-токенов и платных ограничений.">
+<meta name="description" content="Бесплатный конструктор Apple Команд для Яндекс Умного дома. Вход через Яндекс ID, выбор устройств, защищённая загрузка по согласию пользователя.">
 <style>
 :root{color-scheme:dark;--bg:#0c1220;--panel:#161e30;--panel2:#1a2841;--border:#34415c;--text:#f4f7fd;--muted:#b3c0d6;--accent:#80edbd;--violet:#c2abff}
 *[hidden]{display:none!important}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#253557 0%,transparent 48%),var(--bg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--text)}
@@ -31,7 +31,7 @@ details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-to
 <header><a class="brand" href="./"><img src="./assets/siri-smart-home-icon.png" width="40" height="40" alt="" aria-hidden="true"> <span>MAPKEPP</span> TOOLS</a><nav><a href="#generator">Конструктор</a><a href="#privacy">Безопасность</a><a href="#support">Поддержка</a></nav></header>
 <section class="hero"><div class="eyebrow">Открытые инструменты • Бесплатно для всех</div>
 <h1>Создайте команду для умного дома за пару минут</h1>
-<p>Управляйте устройствами, группами и сценариями через приложение Apple «Команды». Без платных функций, обязательной регистрации и передачи пароля или OAuth-токена сайту.</p>
+<p>Управляйте устройствами, группами и сценариями через приложение Apple «Команды». Без платных функций и обязательной регистрации Mapkepp. В ручном генераторе токен вводится на iPhone, а в расширенном конструкторе — используется для получения устройств только после вашего согласия.</p>
 <div class="pills"><span class="pill">iPhone • iPad</span><span class="pill">Яндекс Умный дом API</span><span class="pill">Без рекламы</span><span class="pill">Открытый код</span></div></section>
 <section class="panel" style="margin-bottom:22px;border-color:#4e8271;background:#1c3440" aria-labelledby="nextTitle">
 <h2 id="nextTitle">✨ Новый конструктор по домам и комнатам</h2>
@@ -53,7 +53,7 @@ details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-to
 <div role="status" aria-live="polite" id="notice"></div></form></section>
 <aside class="panel"><h2>Что получится</h2><p class="sub">Предпросмотр HTTP-запроса. OAuth-токен вводится непосредственно на iPhone при добавлении команды.</p>
 <div><strong id="previewMethod">POST</strong> <code id="previewPath"></code></div><pre id="preview" aria-label="JSON запроса"></pre>
-<div class="banner"><strong>Ваш OAuth-токен не нужен этому сайту.</strong><div>Мы не просим его, не сохраняем и не передаём серверу подписи. Пользователь вводит токен уже на своём iPhone.</div></div>
+<div class="banner"><strong>В этом ручном генераторе OAuth-токен вводится уже на iPhone.</strong><div>Расширенный конструктор по домам и комнатам работает иначе: после вашего согласия токен на время запроса передаётся защищённому серверу Mapkepp Tools для получения списка устройств из Яндекса. Он не сохраняется в базе. <a href="./services.html">Сервисы и приватность</a>.</div></div>
 <h3>Установка на iPhone</h3><ol><li>Создайте команду и скачайте подписанный файл.</li><li>Откройте файл в приложении «Команды».</li><li>Введите собственный OAuth-токен с доступом <code>iot:control</code> без <code>Bearer</code>.</li><li>Если включили авто-VPN — выберите свой VPN-профиль для отключения и повторного подключения.</li><li>Проверьте действие на реальном устройстве.</li></ol>
 <details><summary>Что, если подпись не скачалась?</summary><p>Сервис Shortcuty является независимым сторонним провайдером и может быть недоступен. Скачайте неподписанный файл, затем подпишите его через <a href="https://sign.shortcuty.app/" target="_blank" rel="noopener noreferrer">страницу Shortcuty</a> вручную. Неподписанный файл iOS обычно не импортирует.</p></details>
 <details><summary>Почему VPN не обходится напрямую?</summary><p>Apple «Команды» не умеют выбирать сетевой маршрут для конкретного запроса. Экспериментальная опция временно отключает VPN, что уменьшает защищённость соединения. Надёжный вариант без разрыва — раздельная маршрутизация в VPN-клиенте.</p></details>
