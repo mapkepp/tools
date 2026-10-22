@@ -21,7 +21,7 @@ if ((window.opener || window.parent!==window) &&
       info.textContent="Не удалось завершить вход через виджет. Вернитесь в конструктор и используйте обычный вход.";
       return;
     }
-    try{window.YaSendSuggestToken("https://mapkepp.github.io",{source:"mapkepp-tools"});}
+    try{window.YaSendSuggestToken("https://mapkepp.github.io",{flag:true});}
     catch{info.textContent="Не удалось передать результат Яндекс ID. Используйте обычный вход.";}
   };
   sdk.onerror=()=>{info.textContent="Не загрузился официальный обработчик Яндекс ID. Используйте обычный вход."};
