@@ -1,9 +1,33 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Яндекс ID — Mapkepp Tools</title>
 <style>body{font:16px/1.5 system-ui,-apple-system,Arial,sans-serif;background:#0d1527;color:#f5f8ff;margin:0;padding:24px}main{max-width:620px;margin:7vh auto;background:#1b2840;padding:26px;border:1px solid #405272;border-radius:17px}h1{font-size:1.6rem}p{color:#c4d3e7}button,a{font:inherit;color:#101c25;padding:13px 18px;background:#8ee6bb;border:0;border-radius:10px;font-weight:700;display:inline-block;cursor:pointer;text-decoration:none;margin:8px 5px 8px 0}button:disabled{opacity:.45}a{color:#d0e7ff;background:#2b3b5b}.note{padding:14px;border:1px solid #4b627f;background:#20344e;border-radius:10px}.msg{font-size:.9rem;margin-top:16px}</style>
-</head><body><main><h1>🔐 Разрешение Яндекса</h1><p id="result">Проверяю ответ Яндекс ID…</p><div id="actions" hidden><p class="note">1. Нажмите «Скопировать токен». 2. Откройте готовую команду-помощник на iPhone и вставьте токен при её добавлении. 3. Запустите команду, вернитесь в конструктор и нажмите «Вставить из буфера».</p><button id="copy">1. Скопировать токен</button><a href="../ios/Yandex_Home_Discovery.shortcut" id="helper">2. Скачать команду для iPhone</a><a href="../studio/" id="back">3. Вернуться в конструктор</a></div><p class="note">Токен будет временно передан в конструктор внутри этой вкладки, без сохранения на сервере или в GitHub. Для чтения списка домов требуется ваше согласие на одноразовый запрос через защищённый серверный обработчик.</p><p class="msg" id="info"></p></main>
+</head><body><main><h1>🔐 Разрешение Яндекса</h1><p id="result">Проверяю ответ Яндекс ID…</p><div id="actions" hidden><p class="note">Если автоматический возврат не сработал, повторите вход из конструктора. Для установки готовой Apple Команды токен можно скопировать в конструкторе и вставить на iPhone при установке.</p><button id="copy">1. Скопировать токен</button><a href="../ios/Yandex_Home_Discovery.shortcut" id="helper">2. Скачать команду для iPhone</a><a href="../studio/" id="back">3. Вернуться в конструктор</a></div><p class="note">Токен будет временно передан в конструктор внутри этой вкладки, без сохранения на сервере или в GitHub. Для чтения списка домов требуется ваше согласие на одноразовый запрос через защищённый серверный обработчик.</p><p class="msg" id="info"></p></main>
 <script>
 (()=>{
 "use strict";
+// Official Yandex personal button uses an SDK-owned popup/iframe + postMessage.
+// Do not strip the hash or read its token before the SDK forwards it to the
+// exact verified origin. Ordinary same-tab OAuth continues below.
+let existingState="";
+try{existingState=sessionStorage.getItem("mapkepp.yandex.oauth.state")||"";}catch{}
+if ((window.opener || window.parent!==window) &&
+    location.hash.includes("access_token=") && !existingState) {
+  const info=document.getElementById("result");
+  info.textContent="Завершаем вход через официальную кнопку Яндекс ID…";
+  const sdk=document.createElement("script");
+  sdk.src="https://yastatic.net/s3/passport-sdk/autofill/v1/sdk-suggest-token-with-polyfills-latest.js";
+  sdk.referrerPolicy="no-referrer";
+  sdk.onload=()=>{
+    if (typeof window.YaSendSuggestToken!=="function") {
+      info.textContent="Не удалось завершить вход через виджет. Вернитесь в конструктор и используйте обычный вход.";
+      return;
+    }
+    try{window.YaSendSuggestToken("https://mapkepp.github.io",{source:"mapkepp-tools"});}
+    catch{info.textContent="Не удалось передать результат Яндекс ID. Используйте обычный вход.";}
+  };
+  sdk.onerror=()=>{info.textContent="Не загрузился официальный обработчик Яндекс ID. Используйте обычный вход."};
+  document.head.appendChild(sdk);
+  return;
+}
 const TOKEN_KEY="mapkepp.yandex.oauth.tmp";
 const STATE_KEY="mapkepp.yandex.oauth.state";
 const hash=new URLSearchParams(location.hash.replace(/^#/,""));
