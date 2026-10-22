@@ -23,8 +23,9 @@ test("public OAuth URL and official SDK use only the newly registered client",as
  assert.ok(u.searchParams.get("scope").split(" ").includes("iot:control"));
  assert.match(widget,/YaAuthSuggest\.init/);
  assert.match(widget,/sdk-suggest-with-polyfills-latest\.js/);
- assert.match(widget,/parentId: "yandexButtonContainer"/);
+ assert.match(widget,/parentId:\s*"yandexButtonContainer"/);
  assert.match(widget,/new Event\("input"/);
+ assert.match(widget,/DOMContentLoaded/);
  assert.doesNotMatch(widget,/console\.log|localStorage|JSON\.stringify\(result\)/);
 });
 
