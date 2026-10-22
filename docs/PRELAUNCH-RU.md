@@ -8,19 +8,19 @@
 - [x] Перенесён `index.html` из временного репозитория `mapkepp/loto-generator`.
 - [x] Перенесены `README.md`, лицензия MIT.
 - [x] Подготовлен бесплатный независимый MVP конструктора; без обязательного ввода OAuth-токена на сайте.
-- [x] Второй репозиторий `mapkepp/tools` оставлен пустым, чтобы не плодить дубли.
+- [x] Основной репозиторий — `mapkepp/tools`; устаревший `mapkepp/mapkepp-tools` перенаправляет пользователей на основной.
 
 ## Что необходимо сделать в интерфейсах владельца
 
 ### A. GitHub Pages — ОБЯЗАТЕЛЬНО
 
 1. Открыть https://github.com/mapkepp/tools/settings/pages
-2. Source: **Deploy from a branch**.
-3. Branch: **main**; Folder: **/(root)**.
-4. Нажать **Save**, затем проверить https://mapkepp.github.io/tools/.
-5. Проверить на Safari iPhone доступность/выполнение сайта.
+2. В Build and deployment выбрать **Source → GitHub Actions** (не Deploy from a branch).
+3. После включения нажать **Re-run jobs** для https://github.com/mapkepp/tools/actions/runs/39791794077 или запустить workflow вручную: https://github.com/mapkepp/tools/actions/workflows/pages.yml
+4. Проверить https://mapkepp.github.io/tools/ (HTTP 200).
+5. Проверить работу сайта в Safari на iPhone.
 
-По состоянию на подготовку Pages по новому URL выдавал HTTP 404. В подключённом GitHub-инструменте нет операции настройки Pages.
+**Проверено:** репозиторий и workflow созданы, но первый деплой завершился FAIL с текстом `Get Pages site failed / Not Found`. REST API GitHub Pages также отвечает HTTP 404: публикация **не включена**. Подключённые GitHub-инструменты позволяют управлять файлами и Actions, но не имеют операции изменения настройки Pages; облачный браузер не авторизован в GitHub. Включение Pages в интерфейсе требует один раз прав владельца. Дальнейшие push в main публикуются автоматически.
 
 ### B. Яндекс OAuth — ОБЯЗАТЕЛЬНО для безопасного входа пользователей
 
