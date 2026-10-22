@@ -19,7 +19,7 @@ const RESPONSE_LIMIT = 2_500_000;
  */
 const studioCapability = (cap) => {
   if (!cap || typeof cap.type !== "string") return null;
-  const type=cap.type, p=cap.parameters||{}, state=cap.state||{};
+  const type=cap.type, p=cap.parameters||{};
   const allowed=[
     "devices.capabilities.on_off",
     "devices.capabilities.range",
@@ -39,7 +39,7 @@ const studioCapability = (cap) => {
     parameters.instance=p.instance;
     if(Array.isArray(p.modes))parameters.modes=p.modes
       .filter(m=>m && typeof m.value==="string")
-      .map(m=>({value:m.value}));
+      .map(m=>({value:m.value})).sort((a,b)=>a.value.localeCompare(b.value));
   }
   if(type==="devices.capabilities.color_setting" && p.temperature_k){
     const t=p.temperature_k;
@@ -49,7 +49,7 @@ const studioCapability = (cap) => {
     }
   }
   const out={type,parameters};
-  if(typeof state.value==="number" && Number.isFinite(state.value))out.state={value:state.value};
+  // Exclude rapidly changing live state; each segment is read independently.
   return out;
 };
 const slimStudioHome = home => {
@@ -58,21 +58,24 @@ const slimStudioHome = home => {
     ...identity(x),
     ...(typeof x.household_id==="string"?{household_id:x.household_id}:{})
   });
+  const byId=(a,b)=>a.id.localeCompare(b.id);
+  const orderedIds=list=>Array.isArray(list)?list.filter(id=>typeof id==="string").sort():[];
   const capabilities=x=>Array.isArray(x.capabilities)
-    ?x.capabilities.map(studioCapability).filter(Boolean):[];
+    ?x.capabilities.map(studioCapability).filter(Boolean).sort((a,b)=>
+      (a.type+":"+String(a.parameters.instance||"")).localeCompare(b.type+":"+String(b.parameters.instance||""))):[];
   return {
     status:"ok",
-    households:home.households.map(identity),
+    households:home.households.map(identity).sort(byId),
     rooms:home.rooms.map(x=>({
       ...linkage(x),
-      devices:Array.isArray(x.devices)?x.devices.filter(id=>typeof id==="string"):[]
-    })),
+      devices:orderedIds(x.devices)
+    })).sort(byId),
     devices:home.devices.map(x=>({
       ...linkage(x),
       ...(typeof x.room==="string"?{room:x.room}:{}),
       ...(typeof x.type==="string"?{type:x.type}:{}),
       capabilities:capabilities(x)
-    })),
+    })).sort(byId),
     groups:home.groups.map(x=>({
       ...linkage(x),
       ...(typeof x.type==="string"?{type:x.type}:{}),
@@ -82,7 +85,7 @@ const slimStudioHome = home => {
     scenarios:home.scenarios.map(x=>({
       ...identity(x),
       is_active:x.is_active!==false
-    }))
+    })).sort(byId)
   };
 };
 
