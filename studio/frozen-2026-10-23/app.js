@@ -650,6 +650,7 @@ $("downloadSign").addEventListener("click",()=>{
 });
 // Only metadata about a chosen action goes into a share link. Never an OAuth token.
 window.MapkeppStudio = Object.freeze({
+ createUnsigned(){return file("");},
  getShareData(){
    const r=request(), a=currentAction();
    const value = a.cap === "scenario" ? null : (selected.kind === "group" ? r.body.actions[0].state.value : r.body.devices[0].actions[0].state.value);
