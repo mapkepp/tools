@@ -4,6 +4,14 @@
 
 > Донаты — это добровольные пожертвования. Они не открывают никакого дополнительного функционала и не дают преимуществ. Весь функционал доступен сразу всем полностью бесплатно, независимо от пожертвований. [Поддержать через Т-Банк](https://t.tb.ru/pm_short/7Ixu10XDRWa).
 
+## Current release — 23 October 2026
+
+- **Immutable homepage snapshot:** [main page](https://mapkepp.github.io/tools/) is a frozen Studio UI (Git blob `92197c2ad29e31fd72cbb3d62bdef38577b09220`), with isolated scripts in `studio/frozen-2026-10-23/`. Do not modify `index.html` or frozen assets without a new explicit user instruction.
+- **Active development:** [Studio](https://mapkepp.github.io/tools/studio/). Signed .shortcut downloads now use the restricted `shortcut-sign` Supabase function and Shortcuty. Live provider signing has passed a synthetic-data test; real Safari/iPhone import is NOT_TESTED.
+- Ready-to-use QR configuration is preserved across Yandex OAuth callback so users can copy their token without losing the prepared command.
+- Concurrency is stateless and account-isolated; per-user independent requests were tested with synthetic data. Live load/quota capacity is NOT_TESTED; local iPhone discovery + manual JSON import is optional.
+- See [canonical release checkpoint](docs/STUDIO-RELEASE-2026-10-23-RU.md) and [backed-up source branch](https://github.com/mapkepp/tools/tree/backup/studio-working-2026-10-23).
+
 **Primary repository:** https://github.com/mapkepp/tools/  
 **Live website:** https://mapkepp.github.io/tools/  
 **Historical first demo:** https://mapkepp.github.io/loto-generator/public-tools-hub/ (not the primary site)
