@@ -15,7 +15,7 @@
 - Live preview of official Yandex Smart Home HTTP request and copy request metadata.
 - Offline-in-browser XML plist generator for Apple Shortcuts. No dependency on browser JavaScript libraries.
 - Optional **user-approved** cross-origin HTML form submission of the **unsigned** shortcut to the documented [Shortcuty Signing API](https://github.com/Shortcuty/Signing-Server-API-Documentation). Apple signatures are required for third-party import.
-- Import-time prompt for user's Yandex OAuth token; the token never needs to be entered on the website. The unsigned Shortcut may contain entered device/group/scenario identifiers, which are sent to Shortcuty when signing.
+- The device studio receives an OAuth token through Yandex ID or optional manual input. The signed iPhone Shortcut separately prompts for a token at import. The unsigned Shortcut contains **no token** but does contain the selected object ID, which is disclosed to Shortcuty when signing.
 - Experimental VPN disconnect/reconnect with explicit warning; users select their local VPN profile after importing. A failed action may leave VPN disconnected.
 
 ## Smart Home device explorer
@@ -23,13 +23,13 @@
 Live: https://mapkepp.github.io/tools/studio/
 
 - Users may paste a Yandex OAuth token or sign in via Yandex ID; OAuth `state` is checked before an access token is accepted.
-- Once the separate read-only backend is deployed and its verified URL is configured, the site loads `GET /v1.0/user/info` through `api/yandex-home.js` with a staged visible progress indicator.
+- **DEPLOYED:** a Supabase Edge Function at `https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/yandex-home` forwards a single user-approved HTTPS read-only request to `GET /v1.0/user/info` and returns devices, rooms, groups, scenarios and households. The web interface shows stages of loading.
 - Users can browse houses, rooms, devices, groups and scenarios and choose only supported capabilities for generating signed iPhone commands.
-- **CURRENT LIMITATION:** the backend hosting connection is not yet provisioned; the GitHub Pages frontend cannot fetch user homes directly owing to Yandex API CORS restrictions. Real credentials were not used for testing.
+- **VALIDATED LIVE:** HTTP OPTIONS with the site's Origin → 204; invalid OAuth token → Yandex 401; disallowed Origin → 403. Real Yandex-account inventory and physical device execution remain **NOT_TESTED** because no real user token was transferred for verification.
 - [Russian setup/status guide](docs/YANDEX-AUTO-IMPORT-RU.md); automatic tests: [GitHub Actions](https://github.com/mapkepp/tools/actions/workflows/ci.yml).
 
 ## Privacy and rights
-No registration with Mapkepp, advertising cookies, or analytics. The studio **can** receive a Yandex OAuth access token in a password field or via a state-checked OAuth callback; the token is temporarily passed through same-tab sessionStorage and deleted from that temporary store as soon as it is consumed. Users explicitly consent before a one-time HTTPS request containing the token to the owner's read-only serverless proxy. The application source, GitHub repositories, signing service, and browser localStorage do **not** store tokens. A hosting provider may have its own infrastructure logs; the proxy code does not intentionally log tokens or home data. Until the proxy is deployed the live UI explains that automated device import is unavailable and does not transmit tokens. The static page does not itself call the Yandex device-control API. External Shortcuty signing requires separate consent and excludes tokens.
+No registration with Mapkepp, advertising cookies, or analytics. The studio **can** receive a Yandex OAuth access token in a password field or via a state-checked OAuth callback; the token is temporarily passed through same-tab sessionStorage and deleted from that temporary store as soon as it is consumed. Users explicitly consent before a one-time HTTPS request containing the token to the owner's read-only serverless proxy. The application source, GitHub repositories, signing service, and browser localStorage do **not** store tokens. A hosting provider may have its own infrastructure logs; the proxy code does not intentionally log tokens or home data. The deployed proxy is read-only and responds with `Cache-Control: no-store`. The static page does not itself call the Yandex device-control API. External Shortcuty signing requires separate consent and excludes tokens.
 
 Use only devices and accounts you are authorized to control. No affiliation with Apple or Yandex; product names are used for compatibility descriptions and do not imply endorsement.
 
@@ -55,4 +55,4 @@ No computer or paid hosting is required.
 - XML plist generation, true/false, integer number, ID and OAuth-token absence: PASS.
 - Apple AEA1 signer integration tested on scenario and VPN/non-VPN variants: PASS using **synthetic** IDs only.
 - Real iPhone iOS 26.6.2 import, VPN reconnection, device control, Safari cross-origin form downloads: **NOT_TESTED**.
-- Primary `mapkepp/tools` repository and live site: **PASS**; security regression tests: **PASS**; home backend: **NOT_DEPLOYED**; real iPhone and actual payment processing: **NOT_TESTED**.
+- Primary `mapkepp/tools` and site: **PASS**; security regression tests: **PASS**; Supabase home backend and CORS: **PASS**; real Yandex devices, iPhone execution and real payments: **NOT_TESTED**.
