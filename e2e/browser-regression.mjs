@@ -194,6 +194,10 @@ try{
  await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  assert.match(await page.locator("#localInventoryStatus").innerText(),/без|из браузерной копии/i);
+ await page.reload({waitUntil:"domcontentloaded"});
+ await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
+ assert.equal(await page.locator("#oauthToken").inputValue(),"");
+ console.log("PASS: inventory auto-restores on a normal subsequent visit, without a token or network request");
  await page.locator("#forgetInventoryBrowser").click();
  await page.locator("#localInventoryStatus").getByText(/Локальная копия удалена/).waitFor();
  console.log("PASS: offline restore after OAuth reset without network, local cache deletion");
