@@ -174,6 +174,23 @@ try{
  assert.match(await home.locator("#jsonPreview").innerText(),/api.iot.yandex.net/);
  assert.equal(homepageErrors.length,0,"Frozen homepage must not throw JavaScript errors");
  console.log("PASS: homepage frozen Studio snapshot renders example and contains no page errors");
+ await home.locator("#makeShare").click();
+ const rootShare=await home.locator("#shareUrl").inputValue();
+ assert.match(rootShare,/\/tools\/#config=/);
+ await home.goto(rootShare,{waitUntil:"domcontentloaded"});
+ assert.match(await home.locator("#jsonPreview").innerText(),/l1/);
+ let rootOAuthState="";
+ await home.route("https://oauth.yandex.ru/**",async route=>{
+   rootOAuthState=new URL(route.request().url()).searchParams.get("state")||"";
+   return route.fulfill({status:200,contentType:"text/html",body:"<html>Simulated Yandex OAuth</html>"});
+ });
+ await home.locator("#yandexAuth").click();
+ await home.waitForURL(/oauth\.yandex\.ru/,{timeout:15000});
+ assert.match(rootOAuthState,/^[0-9a-f]{48}$/);
+ await home.goto("https://mapkepp.github.io/tools/oauth/callback.html#access_token=synthetic-root-oauth-123456&state="+rootOAuthState,{waitUntil:"domcontentloaded"});
+ await home.waitForURL("**/studio/?oauth=success",{timeout:15000});
+ assert.match(await home.locator("#jsonPreview").innerText(),/l1/);
+ console.log("PASS: frozen root QR link survives same-tab Yandex OAuth callback to active Studio");
  await home.close();
  if(errors.length)console.log("Browser page errors (redacted count):",errors.length);
 }finally{
