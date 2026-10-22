@@ -10,6 +10,82 @@ const TARGET = "https://api.iot.yandex.net/v1.0/user/info";
 const SIZE_LIMIT = 2_000_000;
 const RESPONSE_LIMIT = 2_500_000;
 
+
+/*
+ * Public Studio needs only identity, hierarchy, supported capabilities and
+ * numeric action bounds. Drop verbose API properties, aliases, manufacturer
+ * metadata and per-capability timestamps before crossing the browser edge.
+ * IDs/names are still sent solely to the requesting browser, never logged.
+ */
+const studioCapability = (cap) => {
+  if (!cap || typeof cap.type !== "string") return null;
+  const type=cap.type, p=cap.parameters||{}, state=cap.state||{};
+  const allowed=[
+    "devices.capabilities.on_off",
+    "devices.capabilities.range",
+    "devices.capabilities.mode",
+    "devices.capabilities.color_setting"
+  ];
+  if(!allowed.includes(type))return null;
+  const parameters={};
+  if(type==="devices.capabilities.range" && typeof p.instance==="string"){
+    parameters.instance=p.instance;
+    if(p.range && Number.isFinite(p.range.min) && Number.isFinite(p.range.max)){
+      parameters.range={min:p.range.min,max:p.range.max};
+      if(Number.isFinite(p.range.precision))parameters.range.precision=p.range.precision;
+    }
+  }
+  if(type==="devices.capabilities.mode" && typeof p.instance==="string"){
+    parameters.instance=p.instance;
+    if(Array.isArray(p.modes))parameters.modes=p.modes
+      .filter(m=>m && typeof m.value==="string")
+      .map(m=>({value:m.value}));
+  }
+  if(type==="devices.capabilities.color_setting" && p.temperature_k){
+    const t=p.temperature_k;
+    if(Number.isFinite(t.min)&&Number.isFinite(t.max)){
+      parameters.temperature_k={min:t.min,max:t.max};
+      if(Number.isFinite(t.precision))parameters.temperature_k.precision=t.precision;
+    }
+  }
+  const out={type,parameters};
+  if(typeof state.value==="number" && Number.isFinite(state.value))out.state={value:state.value};
+  return out;
+};
+const slimStudioHome = home => {
+  const identity=x=>({id:x.id,name:x.name});
+  const linkage=x=>({
+    ...identity(x),
+    ...(typeof x.household_id==="string"?{household_id:x.household_id}:{})
+  });
+  const capabilities=x=>Array.isArray(x.capabilities)
+    ?x.capabilities.map(studioCapability).filter(Boolean):[];
+  return {
+    status:"ok",
+    households:home.households.map(identity),
+    rooms:home.rooms.map(x=>({
+      ...linkage(x),
+      devices:Array.isArray(x.devices)?x.devices.filter(id=>typeof id==="string"):[]
+    })),
+    devices:home.devices.map(x=>({
+      ...linkage(x),
+      ...(typeof x.room==="string"?{room:x.room}:{}),
+      ...(typeof x.type==="string"?{type:x.type}:{}),
+      capabilities:capabilities(x)
+    })),
+    groups:home.groups.map(x=>({
+      ...linkage(x),
+      ...(typeof x.type==="string"?{type:x.type}:{}),
+      devices:Array.isArray(x.devices)?x.devices.filter(id=>typeof id==="string"):[],
+      capabilities:capabilities(x)
+    })),
+    scenarios:home.scenarios.map(x=>({
+      ...identity(x),
+      is_active:x.is_active!==false
+    }))
+  };
+};
+
 const json = (data, status, origin, metrics=null) => {
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
@@ -111,9 +187,11 @@ export default {
       return diagnostic("unexpected_yandex_response",502,origin);
     }
     const upstreamMs=Math.round(performance.now()-upstreamStart);
-    const replyBytes=new TextEncoder().encode(JSON.stringify(home)).byteLength;
-    // Numeric transport metrics only. Never log names, device IDs, account IDs, token, body or headers.
-    console.info("mapkepp-home transport "+JSON.stringify({result:"ready",http_status:200,reply_bytes:replyBytes,upstream_ms:upstreamMs}));
-    return json(home,200,origin,{upstreamMs});
+    const compact=slimStudioHome(home);
+    const originalBytes=new TextEncoder().encode(body).byteLength;
+    const replyBytes=new TextEncoder().encode(JSON.stringify(compact)).byteLength;
+    // Numeric transport metrics only; no tokens, names, ID values or device content.
+    console.info("mapkepp-home transport "+JSON.stringify({result:"ready",http_status:200,source_bytes:originalBytes,reply_bytes:replyBytes,upstream_ms:upstreamMs}));
+    return json(compact,200,origin,{upstreamMs});
   }
 };
