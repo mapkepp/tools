@@ -56,3 +56,29 @@ test("reject invalid signature and broken hashes from upstream",async()=>{
  assert.equal((await result.json()).error,"invalid_signed_format");
  }finally{globalThis.fetch=oldFetch;}
 });
+
+test("diagnostics identify home/studio, stage and trace but redact arbitrary private fields",async()=>{
+ const previous=console.info,lines=[];
+ console.info=(message)=>lines.push(String(message));
+ try{
+   for(const page of ["home","studio"]){
+     const body={operation:"sign_trace",page,trace:"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",events:[
+       {stage:"click",ms:0,secret:"DONOTLOG-OAUTH"},
+       {stage:"failure",ms:1200,code:"network_error",secret:"DONOTLOG-OAUTH"}
+     ]};
+     const response=await handler.fetch(new Request("https://sign.invalid",{
+       method:"POST",headers:{Origin:ORIGIN,"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify(body)}));
+     assert.equal(response.status,200);
+     assert.equal((await response.json()).accepted,2);
+   }
+   assert.equal(lines.length,4);
+   assert.ok(lines.some(line=>line.includes('"page":"home"') && line.includes("browser_click")));
+   assert.ok(lines.some(line=>line.includes('"page":"studio"') && line.includes("browser_failure")));
+   assert.ok(lines.every(line=>!line.includes("DONOTLOG")));
+ }finally{console.info=previous;}
+ const invalid=await handler.fetch(new Request("https://sign.invalid",{
+   method:"POST",headers:{Origin:ORIGIN,"Content-Type":"text/plain"},
+   body:JSON.stringify({operation:"sign_trace",page:"attacker",trace:"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",events:[{stage:"click",ms:0}]})
+ }));
+ assert.equal(invalid.status,400);
+});
