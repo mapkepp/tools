@@ -1,5 +1,9 @@
 # Mapkepp Tools — Smart Home Shortcut Studio
 
+[💜 Добровольно поддержать автора через ЮMoney](https://yoomoney.ru/fundraise/1L2T11QBAHF.261022)
+
+> Все функции проекта бесплатны и доступны без поддержки автора. Переводы полностью добровольные; дополнительных возможностей или преимуществ они не дают.
+
 **Primary repository:** https://github.com/mapkepp/tools/  
 **Planned Pages URL (currently not live):** https://mapkepp.github.io/tools/  
 **Temporary working demo:** https://mapkepp.github.io/loto-generator/public-tools-hub/
@@ -22,6 +26,8 @@ Use only devices and accounts you are authorized to control. No affiliation with
 API docs: https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-protocol
 
 ## Donations
+
+[💜 Добровольно поддержать автора через ЮMoney](https://yoomoney.ru/fundraise/1L2T11QBAHF.261022)
 All functionality is free and identical for everyone. Author support is **optional and confers no feature access, priority, or other benefit**. Primary YooMoney fundraiser: https://yoomoney.ru/fundraise/1L2T11QBAHF.261022. The public page contains a direct link and a separately user-activated iframe to `https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1L2T11QBAHF.261022&`. The embedded frame is **not loaded before a user clicks**. Payments take place with YooMoney and not on this website. Tax/payment processing treatment depends on the facts and local law; labelling a transaction a donation does not determine its tax status. Do not use a different bill number from snippets posted earlier.
 
 ## GitHub Pages
