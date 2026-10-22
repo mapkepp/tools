@@ -155,7 +155,9 @@ export default {
     }});
     if (request.method !== "POST") return json({error:"method_not_allowed"},405,origin);
     const type = request.headers.get("content-type") || "";
-    if (!type.toLowerCase().startsWith("application/json")) return json({error:"invalid_content_type"},415,origin);
+    // text/plain is CORS-safelisted, so trusted browsers can POST without OPTIONS preflight.
+    // Requests are still restricted by the exact Origin allowlist and a validated OAuth token.
+    if (!/^(application\/json|text\/plain)(?:\s*;|\s*$)/i.test(type)) return json({error:"invalid_content_type"},415,origin);
     const declaredSize = Number(request.headers.get("content-length") || 0);
     if (declaredSize > 8192) return json({error:"request_too_large"},413,origin);
     let text;
