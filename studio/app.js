@@ -5,6 +5,115 @@ const limit=1200000;
 let data=null, selected=null, example=false;
 const API="https://api.iot.yandex.net/v1.0";
 const SIGN="https://sign.shortcuty.app/api/v1/sign";
+const backendUrl=String(window.MAPKEPP_HOME_API_URL||"").trim();
+const TEMP_TOKEN_KEY="mapkepp.yandex.oauth.tmp";
+const STATE_KEY="mapkepp.yandex.oauth.state";
+const CONSENT_KEY="mapkepp.yandex.oauth.consent";
+let busy=false;
+function proxyIsConfigured(){
+  try{
+    const u=new URL(backendUrl);
+    return u.protocol==="https:" && u.pathname.endsWith("/api/yandex-home") && !u.username && !u.password && !u.search && !u.hash;
+  }catch{return false;}
+}
+function progressStage(stage,detail,percent){
+  $("loadProgress").hidden=false;
+  $("loadStep").textContent=stage;
+  $("loadDetail").textContent=detail;
+  if(typeof percent==="number")$("loadBar").value=percent;
+  else $("loadBar").removeAttribute("value");
+}
+function endProgress(){
+  $("loadProgress").hidden=true;
+  $("loadBar").removeAttribute("value");
+}
+function setBackendNotice(){
+  $("backendStatus").textContent=proxyIsConfigured()
+   ?"Защищённый серверный обработчик подключён. Токен используется только для чтения данных вашего дома."
+   :"Автоматическая загрузка временно недоступна: ещё не подключён серверный обработчик. Токен можно вставить, но до подключения сервера он никуда не отправится. Пока доступен импорт списка с iPhone.";
+}
+function asHumanError(error,statusCode){
+  if(statusCode===401||error==="unauthorized")return "Яндекс отказал в доступе: токен истёк или не имеет прав iot:view. Получите новое разрешение.";
+  if(error==="yandex_timeout")return "Яндекс долго не отвечает. Попробуйте повторить запрос.";
+  if(error==="yandex_unavailable")return "Нет соединения с Яндексом. Проверьте интернет и VPN.";
+  if(error==="invalid_token_format")return "Некорректный формат токена. Вставьте токен без слова Bearer.";
+  if(error==="origin_not_allowed")return "Адрес сайта не разрешён серверным обработчиком.";
+  return "Не удалось загрузить данные. Проверьте соединение с Яндексом и повторите запрос.";
+}
+async function loadFromYandex(){
+ if(busy)return;
+ const input=$("oauthToken");
+ const token=input.value.trim().replace(/^Bearer\s+/i,"");
+ if(!token){status("Сначала войдите через Яндекс или вставьте полученный токен.",true);return;}
+ if(!/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(token)){status("Токен содержит недопустимые символы. Скопируйте его из Яндекса без слова Bearer.",true);return;}
+ if(!$("proxyConsent").checked){status("Подтвердите передачу токена нашему защищённому обработчику для одного запроса к Яндексу.",true);return;}
+ if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик ещё не подключён. Токен не отправлялся. Пока можно импортировать список с iPhone.",true);return;}
+ busy=true;$("loadDevices").disabled=true;
+ try{
+   progressStage("Проверка подключения","Подготовка защищённого запроса…",15);
+   await Promise.resolve();
+   progressStage("Запрашиваем данные у Яндекса","Получаем дома, комнаты, устройства, группы и сценарии. Это может занять некоторое время.");
+   const controller=new AbortController();
+   const timeout=setTimeout(()=>controller.abort(),20000);
+   let resp;
+   try{
+     resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
+       headers:{"Content-Type":"application/json"},
+       cache:"no-store",referrerPolicy:"no-referrer",
+       body:JSON.stringify({access_token:token}),signal:controller.signal});
+   }finally{clearTimeout(timeout);}
+   progressStage("Проверяем ответ","Запрос завершён; проверяем формат данных.",70);
+   let raw;try{raw=await resp.text();}catch{throw Error("Не удалось получить ответ сервера.");}
+   if(raw.length>3_000_000)throw Error("Ответ слишком большой.");
+   let parsed;try{parsed=JSON.parse(raw);}catch{throw Error("Сервер вернул некорректный JSON.");}
+   if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
+   progressStage("Готовим список","Сортируем дома, комнаты, устройства и сценарии.",85);
+   loadRaw(JSON.stringify(parsed));
+   progressStage("Готово!","Ваши объекты отображены ниже.",100);
+   $("pick").scrollIntoView({behavior:"smooth",block:"start"});
+   setTimeout(endProgress,2000);
+ }catch(e){
+   endProgress();
+   status(e?.name==="AbortError"?"Время ожидания истекло. Повторите запрос.":String(e?.message||e),true);
+ }finally{busy=false;$("loadDevices").disabled=false;}
+}
+function initOAuth(){
+ setBackendNotice();
+ let tempToken="";
+ try{
+   tempToken=sessionStorage.getItem(TEMP_TOKEN_KEY)||"";
+   sessionStorage.removeItem(TEMP_TOKEN_KEY);
+   if(sessionStorage.getItem(CONSENT_KEY)==="yes")$("proxyConsent").checked=true;
+   sessionStorage.removeItem(CONSENT_KEY);
+ }catch{}
+ if(tempToken && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
+    $("oauthToken").value=tempToken;
+    status("Токен получен от Яндекса. Можно загрузить список устройств.");
+    if(proxyIsConfigured()&&$("proxyConsent").checked)queueMicrotask(loadFromYandex);
+ }
+ $("loadDevices").addEventListener("click",loadFromYandex);
+ $("clearOAuth").addEventListener("click",()=>{
+    $("oauthToken").value="";$("proxyConsent").checked=false;endProgress();
+    try{sessionStorage.removeItem(TEMP_TOKEN_KEY);sessionStorage.removeItem(STATE_KEY);sessionStorage.removeItem(CONSENT_KEY);}catch{}
+    status("Токен удалён из поля и временной памяти вкладки.");
+ });
+ $("oauthToken").addEventListener("paste",()=>status("После вставки токена нажмите «Загрузить мои устройства»."));
+ $("yandexAuth").addEventListener("click",e=>{
+   // A random state ties the returning token to this tab, preventing unsolicited
+   // fragments from being accepted as an authorised login.
+   let bytes=new Uint8Array(24);crypto.getRandomValues(bytes);
+   const state=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+   try{
+     sessionStorage.setItem(STATE_KEY,state);
+     sessionStorage.setItem(CONSENT_KEY,$("proxyConsent").checked?"yes":"no");
+   }catch{
+     e.preventDefault();status("В этом браузере отключена временная память. Разрешите её для авторизации Яндекса или вставьте токен вручную.",true);return;
+   }
+   const url=new URL(e.currentTarget.href);
+   url.searchParams.set("state",state);
+   e.currentTarget.href=url.toString();
+ });
+}
 const clone=s=>JSON.parse(JSON.stringify(s));
 const demo={
  status:"ok",
@@ -222,5 +331,6 @@ $("downloadSign").addEventListener("click",()=>{
   status("Команда отправлена на подпись без токена. Проверьте открывшуюся вкладку и загрузки браузера.");
  }catch(e){status(e.message,true);}
 });
+initOAuth();
 render();
 })();
