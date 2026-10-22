@@ -81,6 +81,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <details id="advancedImport" class="notice" style="margin-top:15px">
 <summary>Дополнительно: импортировать ранее сохранённый JSON</summary>
 <p class="hint">Этот способ необязателен. Он предназначен для диагностики или переноса уже полученного перечня устройств. Устанавливать отдельную iPhone-команду для обычной работы конструктора не требуется.</p>
+<p class="hint">Альтернативный режим для iPhone: приложение «Команды» может выполнять запросы к Яндекс API локально, без передачи JSON через браузерный сервер. Для этого предусмотрена <a href="../ios/Yandex_Home_Discovery.shortcut" download>подписанная вспомогательная команда Discovery</a>. Это необязательная возможность; её импорт и получение JSON на реальном iPhone ещё не проверены. Если получили JSON, импортируйте его ниже. Обычная загрузка через сайт по-прежнему доступна.</p>
 <label for="dataFile">Выбрать JSON-файл</label>
 <input id="dataFile" type="file" accept=".json,application/json,text/plain">
 <div class="flex"><button id="pasteButton" type="button">Вставить JSON из буфера</button></div>
