@@ -22,7 +22,7 @@ Use only devices and accounts you are authorized to control. No affiliation with
 API docs: https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-protocol
 
 ## Donations
-All functionality is free and identical for everyone. The support button is a **placeholder** until the owner configures a verified donation URL at `DONATION_LINK` in `index.html`. This site does not accept payments, process cards or promise benefits in return for gifts. Tax and payment processing treatment depends on the facts and applicable law; merely labeling a payment a donation does not make it non-taxable.
+All functionality is free and identical for everyone. Author support is **optional and confers no feature access, priority, or other benefit**. Primary YooMoney fundraiser: https://yoomoney.ru/fundraise/1L2T11QBAHF.261022. The public page contains a direct link and a separately user-activated iframe to `https://yoomoney.ru/quickpay/fundraise/widget?billNumber=1L2T11QBAHF.261022&`. The embedded frame is **not loaded before a user clicks**. Payments take place with YooMoney and not on this website. Tax/payment processing treatment depends on the facts and local law; labelling a transaction a donation does not determine its tax status. Do not use a different bill number from snippets posted earlier.
 
 ## GitHub Pages
 
@@ -40,4 +40,4 @@ No computer or paid hosting is required.
 - XML plist generation, true/false, integer number, ID and OAuth-token absence: PASS.
 - Apple AEA1 signer integration tested on scenario and VPN/non-VPN variants: PASS using **synthetic** IDs only.
 - Real iPhone iOS 26.6.2 import, VPN reconnection, device control, Safari cross-origin form downloads: **NOT_TESTED**.
-- Primary `mapkepp/tools` repository: **PASS**; deployment workflow: **PASS created / FAIL first run due Pages not enabled**; donation link not configured.
+- Primary `mapkepp/tools` repository: **PASS**; deployment workflow: **PASS created / Pages activation must be verified**; YooMoney donation link and opt-in widget configured; actual payment flow **NOT_TESTED**.
