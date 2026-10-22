@@ -63,9 +63,14 @@ async function loadFromYandex(){
        headers:{"Content-Type":"application/json"},
        cache:"no-store",referrerPolicy:"no-referrer",
        body:JSON.stringify({access_token:token}),signal:controller.signal});
+   progressStage("Читаем ответ сервера","Соединение установлено. Ожидаем полную передачу данных.",65);
+   let raw;
+   try{raw=await resp.text();}catch(e){
+     if(controller.signal.aborted)throw Error("Время ожидания полного ответа истекло (35 секунд).");
+     throw Error("Передача ответа с сервера прервалась. Проверьте подключение и VPN.");
+   }
    }finally{clearTimeout(timeout);}
-   progressStage("Проверяем ответ","Запрос завершён; проверяем формат данных.",70);
-   let raw;try{raw=await resp.text();}catch{throw Error("Не удалось получить ответ сервера.");}
+   progressStage("Проверяем ответ","Ответ полностью получен. Проверяем формат данных.",70);
    if(raw.length>3_000_000)throw Error("Ответ слишком большой.");
    let parsed;try{parsed=JSON.parse(raw);}catch{throw Error("Сервер вернул некорректный JSON.");}
    if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
