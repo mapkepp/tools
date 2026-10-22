@@ -33,41 +33,13 @@ details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-to
 <h1>Создайте команду для умного дома за пару минут</h1>
 <p>Управляйте устройствами, группами и сценариями через приложение Apple «Команды». Без платных функций и обязательной регистрации Mapkepp. В ручном генераторе токен вводится на iPhone, а в расширенном конструкторе — используется для получения устройств только после вашего согласия.</p>
 <div class="pills"><span class="pill">iPhone • iPad</span><span class="pill">Яндекс Умный дом API</span><span class="pill">Без рекламы</span><span class="pill">Открытый код</span></div></section>
-<section class="panel" style="margin-bottom:22px;border-color:#4e8271;background:#1c3440" aria-labelledby="nextTitle">
-<h2 id="nextTitle">✨ Новый конструктор по домам и комнатам</h2>
+<section class="panel" style="margin-bottom:22px;border-color:var(--border);background:var(--panel)" aria-labelledby="nextTitle">
+<h2 id="nextTitle">Новый конструктор — в отдельном разделе</h2>
 <p class="sub" style="margin-bottom:14px">Выбирайте не ID, а свои дома, комнаты, устройства, группы и сценарии. Генерация только поддерживаемых устройством действий.</p>
 <a href="./studio/" class="btn primary">Открыть новый конструктор →</a>
 </section>
-<section id="verifiedExamples" class="panel" style="margin:22px 0" aria-labelledby="verifiedExamplesTitle">
-  <div class="eyebrow">Зафиксированный результат генерации · 22.10.2026</div>
-  <h2 id="verifiedExamplesTitle" style="margin-top:8px">Подписанные примеры Apple Команд</h2>
-  <p class="sub" style="margin-bottom:12px">Ниже — <strong>те самые ранее успешно созданные и подписанные файлы</strong> для команды «Свет на кухне». Их подпись формата Apple AEA1 и SHA-256 проверяются при каждой публикации сайта. Внутри указаны <strong>учебные идентификаторы устройств</strong>: это образец работы генератора, а не настроенное управление вашей лампой.</p>
-  <div class="buttons" style="margin:14px 0">
-    <a class="btn primary" id="sampleKitchenOn" href="./examples/Kitchen_Light_ON.shortcut" download="Kitchen_Light_ON.shortcut" type="application/octet-stream">Скачать пример · Свет ВКЛ</a>
-    <a class="btn" id="sampleKitchenOff" href="./examples/Kitchen_Light_OFF.shortcut" download="Kitchen_Light_OFF.shortcut" type="application/octet-stream">Скачать пример · Свет ВЫКЛ</a>
-    <a class="btn" href="./studio/">Создать команду для своих устройств →</a>
-  </div>
-  <div class="buttons" style="margin:8px 0">
-    <button class="btn" type="button" id="sampleQrOn" aria-expanded="false" aria-controls="sampleQrPanel">Показать QR · ВКЛ</button>
-    <button class="btn" type="button" id="sampleQrOff" aria-expanded="false" aria-controls="sampleQrPanel">Показать QR · ВЫКЛ</button>
-    <button class="btn" type="button" id="copySampleOn">Копировать ссылку · ВКЛ</button>
-    <button class="btn" type="button" id="copySampleOff">Копировать ссылку · ВЫКЛ</button>
-  </div>
-  <div id="sampleQrPanel" class="banner" hidden aria-live="polite">
-    <div><strong id="sampleQrTitle">QR-код готовой команды</strong></div>
-    <div id="sampleQrCanvas" style="background:white;padding:12px;border-radius:12px;display:inline-block;margin:10px 0;max-width:100%"></div>
-    <p style="margin:0;font-size:.91rem;color:#d8e4f6">Наведите камеру iPhone на QR-код. Он открывает этот уже подписанный файл без передачи токена кому-либо.</p>
-  </div>
-  <div id="sampleQrStatus" role="status" aria-live="polite" class="sub"></div>
-  <p class="sub" style="margin-bottom:8px"><strong>Подтверждено:</strong> создание, структура и подпись двух файлов. <strong>Не подтверждено:</strong> импорт и фактическое управление на iPhone. Токены в образцах отсутствуют; при установке команда запросит токен вашего Яндекс ID, но пример с учебным ID всё равно не управляет вашим устройством.</p>
-  <details><summary>Контрольные суммы и происхождение файлов</summary>
-  <p class="sub" style="margin:12px 0">Проверяемая копия из <a href="https://github.com/mapkepp/loto-generator/tree/efce885304d1b8b83d4f217a8440c8a80be59295/ios-shortcuts/yandex-smart-home" target="_blank" rel="noopener noreferrer">ранее сохранённого результата</a>. Сборка GitHub Pages прекращается при несовпадении SHA-256 или формата подписи.</p>
-  <p><code>ВКЛ: c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355</code></p>
-  <p><code>ВЫКЛ: 13988b58a64d296b45bc84fa4a634fdf20ae26c96a030eee525ce22462d0a5f1</code></p>
-  </details>
-</section>
 <main id="generator" class="layout"><section class="panel">
-<h2>Конструктор Apple Команды</h2><p class="sub">Введите ID объекта из вашего умного дома. Сайт создаст файл команды для iPhone.</p>
+<h2>Проверенный классический генератор Apple Команд</h2><p class="sub">Введите ID объекта из вашего умного дома. Сайт создаст файл команды для iPhone.</p>
 <form id="builder" novalidate>
 <label class="field">Название команды<input id="title" maxlength="64" value="Свет на кухне — ВКЛ" required autocomplete="off"></label>
 <label class="field">Объект управления<select id="target"><option value="device">Устройство</option><option value="group">Группа устройств</option><option value="scenario">Сценарий Яндекса</option></select></label>
@@ -233,59 +205,5 @@ E('donateWidgetBtn').addEventListener('click',()=>{
 });
 
 update();
-})();
-</script><script>
-(() => {
-  "use strict";
-  const get=id=>document.getElementById(id);
-  const base=new URL("./examples/",location.href);
-  const files={sampleQrOn:"Kitchen_Light_ON.shortcut",sampleQrOff:"Kitchen_Light_OFF.shortcut"};
-  let loader;
-  function needQR(){
-    if(typeof window.QRCode==="function")return Promise.resolve();
-    if(loader)return loader;
-    loader=new Promise((resolve,reject)=>{
-      const s=document.createElement("script");
-      s.src="./studio/vendor/qrcode.min.js";
-      s.referrerPolicy="no-referrer";
-      s.onload=()=>typeof window.QRCode==="function"?resolve():reject(Error("Не удалось открыть QR-библиотеку."));
-      s.onerror=()=>reject(Error("QR-библиотека временно недоступна."));
-      document.head.append(s);
-    }).catch(e=>{loader=null;throw e;});
-    return loader;
-  }
-  function setStatus(m){get("sampleQrStatus").textContent=m;}
-  async function display(which){
-    const panel=get("sampleQrPanel"),mount=get("sampleQrCanvas");
-    const file=files[which];
-    if(!file)return;
-    if(!panel.hidden && panel.dataset.selected===which){
-      panel.hidden=true;
-      for(const id of Object.keys(files))get(id).setAttribute("aria-expanded","false");
-      return;
-    }
-    setStatus("Готовим QR-код на вашем устройстве…");
-    try{
-      await needQR();
-      const url=new URL(file,base).href;
-      mount.replaceChildren();
-      new window.QRCode(mount,{text:url,width:220,height:220,correctLevel:window.QRCode.CorrectLevel.M});
-      panel.dataset.selected=which;
-      get("sampleQrTitle").textContent=which==="sampleQrOn"?"QR: Свет на кухне — ВКЛ":"QR: Свет на кухне — ВЫКЛ";
-      panel.hidden=false;
-      for(const id of Object.keys(files))get(id).setAttribute("aria-expanded",String(id===which));
-      setStatus("QR содержит только ссылку на образец подписанной команды.");
-    }catch(e){setStatus(String(e?.message||e));}
-  }
-  for(const id of Object.keys(files))get(id).addEventListener("click",()=>display(id));
-  for(const [button,file,name] of [
-    ["copySampleOn","Kitchen_Light_ON.shortcut","ВКЛ"],
-    ["copySampleOff","Kitchen_Light_OFF.shortcut","ВЫКЛ"]
-  ])get(button).addEventListener("click",async()=>{
-    try{
-      await navigator.clipboard.writeText(new URL(file,base).href);
-      setStatus("Ссылка на образец "+name+" скопирована. Она не содержит OAuth-токен.");
-    }catch{setStatus("Не получилось скопировать ссылку. Используйте кнопку скачивания выше.");}
-  });
 })();
 </script></body></html>
