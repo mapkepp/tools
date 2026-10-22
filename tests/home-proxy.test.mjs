@@ -175,6 +175,34 @@ test("segment responses can reassemble a large device listing without cloud stor
   assert.equal(hex,digest);
   assert.equal(JSON.parse(joined).devices.length,110);
 });
+test("concurrent independent users never mix home devices or response fragments",async()=>{
+  const calls=[];
+  const stub=compiler(async(url,options)=>{
+    const auth=options.headers.Authorization;
+    calls.push(auth);
+    const name=auth.endsWith("-A")?"Alpha-home":"Beta-home";
+    await new Promise(done=>setTimeout(done,name==="Alpha-home"?8:3));
+    return new Response(JSON.stringify({
+      status:"ok",households:[{id:name,name}],rooms:[],
+      devices:[{id:name+"-lamp",name,household_id:name,capabilities:[
+        {type:"devices.capabilities.on_off",parameters:{}}]}],
+      groups:[],scenarios:[]
+    }),{status:200});
+  },{info(){}},AbortSignal);
+  const users=["synthetic-token-A","synthetic-token-B"];
+  const results=await Promise.all(Array.from({length:12},(_,i)=>{
+    const tok=users[i%2];
+    return stub.fetch(request("POST",origin,{operation:"segment",index:0,access_token:tok}))
+      .then(async resp=>({tok,status:resp.status,value:await resp.json()}));
+  }));
+  assert.equal(calls.length,12);
+  for(const {tok,status,value} of results){
+    assert.equal(status,200);
+    assert.equal(value.total,1);
+    assert.ok(value.fragment.includes(tok.endsWith("-A")?"Alpha-home":"Beta-home"));
+    assert.ok(!value.fragment.includes(tok.endsWith("-A")?"Beta-home":"Alpha-home"));
+  }
+});
 test("remote technical diagnostics accept only code and bounded numeric fields, never arbitrary strings",async()=>{
   const records=[];
   const recording=compiler(async()=>{throw Error("must not reach Yandex");},{info:(line)=>records.push(line)},AbortSignal);
