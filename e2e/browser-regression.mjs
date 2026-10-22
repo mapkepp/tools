@@ -38,6 +38,26 @@ try{
  await page.reload({waitUntil:"domcontentloaded"});
  assert.ok((await page.locator("#historyList").innerText()).includes("Открыть"));
  console.log("PASS: share restoration and history after reload");
+ const oauthPage=await context.newPage();
+ await oauthPage.goto(share,{waitUntil:"domcontentloaded"});
+ await oauthPage.locator("#actionSelect").waitFor();
+ let returnedState="";
+ await oauthPage.route("https://oauth.yandex.ru/**",async route=>{
+   returnedState=new URL(route.request().url()).searchParams.get("state")||"";
+   return route.fulfill({status:200,contentType:"text/html",body:"<html><body>Simulated Yandex OAuth only</body></html>"});
+ });
+ await oauthPage.locator("#yandexAuth").click();
+ await oauthPage.waitForURL(/oauth\.yandex\.ru/,{timeout:15000});
+ assert.match(returnedState,/^[0-9a-f]{48}$/);
+ await oauthPage.goto("https://mapkepp.github.io/tools/oauth/callback.html#access_token=synthetic-oauth-resume-token-123456&state="+returnedState,
+   {waitUntil:"domcontentloaded"});
+ await oauthPage.waitForURL("**/studio/?oauth=success",{timeout:15000});
+ assert.equal(await oauthPage.locator("#oauthToken").inputValue(),"synthetic-oauth-resume-token-123456");
+ assert.match(await oauthPage.locator("#jsonPreview").innerText(),/42/);
+ assert.ok((await oauthPage.locator("#shortcutName").inputValue()).length>0);
+ await oauthPage.close();
+ console.log("PASS: clicking Yandex OAuth from shared QR preserves selected command and token copy field");
+
  assert.equal(await page.evaluate(()=>window.MapkeppShare.preserveForOAuth()),true);
  assert.ok((await page.evaluate(()=>sessionStorage.getItem("mapkepp.share.pending"))).length>0);
  console.log("PASS: chosen QR/link action saved to session during OAuth redirect without storing a token");
