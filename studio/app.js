@@ -37,7 +37,7 @@ function setBackendNotice(){
 function asHumanError(error,statusCode){
   if(statusCode===401||error==="unauthorized")return "Яндекс отказал в доступе: токен истёк или не имеет прав iot:view. Получите новое разрешение.";
   if(error==="yandex_timeout")return "Яндекс долго не отвечает. Попробуйте повторить запрос.";
-  if(error==="yandex_unavailable")return "Нет соединения с Яндексом. Проверьте интернет и VPN.";
+  if(error==="yandex_unavailable")return "Сервер не смог связаться с API Яндекса.";
   if(error==="invalid_token_format")return "Некорректный формат токена. Вставьте токен без слова Bearer.";
   if(error==="origin_not_allowed")return "Адрес сайта не разрешён серверным обработчиком.";
   return "Не удалось загрузить данные. Проверьте соединение с Яндексом и повторите запрос.";
@@ -55,21 +55,27 @@ async function loadFromYandex(){
    progressStage("Проверка подключения","Подготовка защищённого запроса…",15);
    await Promise.resolve();
    progressStage("Запрашиваем данные у Яндекса","Получаем дома, комнаты, устройства, группы и сценарии. Это может занять некоторое время.");
-   const controller=new AbortController();
-   const timeout=setTimeout(()=>controller.abort(),35000);
    let resp,raw;
-   try{
-     resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
-       headers:{"Content-Type":"application/json"},
-       cache:"no-store",referrerPolicy:"no-referrer",
-       body:JSON.stringify({access_token:token}),signal:controller.signal});
-   progressStage("Читаем ответ сервера","Соединение установлено. Ожидаем полную передачу данных.",65);
-   try{raw=await resp.text();}catch(e){
-     if(controller.signal.aborted)throw Error("Время ожидания полного ответа истекло (35 секунд).");
-     throw Error("Передача ответа с сервера прервалась. Проверьте подключение и VPN.");
+   for(let attempt=1;attempt<=2;attempt++){
+     const controller=new AbortController();
+     const timeout=setTimeout(()=>controller.abort(),35000);
+     try{
+       progressStage("Получаем устройства",attempt===1?"Запрашиваем данные умного дома…":"Повторяем получение ответа после обрыва соединения…",attempt===1?35:45);
+       resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
+         headers:{"Content-Type":"application/json"},cache:"no-store",referrerPolicy:"no-referrer",
+         body:JSON.stringify({access_token:token}),signal:controller.signal});
+       progressStage("Читаем ответ сервера","Ответ HTTP "+resp.status+". Получаем содержимое…",65);
+       raw=await resp.text();
+       break;
+     }catch(error){
+       if(attempt===2){
+         throw Error(controller.signal.aborted
+           ?"Сервер не передал полный ответ за 35 секунд. Повторная попытка не помогла."
+           :"Ответ HTTP получен, но браузер не смог прочитать его полностью даже со второй попытки. Возможен обрыв потока или ошибка браузерного сетевого слоя.");
+       }
+     }finally{clearTimeout(timeout);}
    }
-   }finally{clearTimeout(timeout);}
-   progressStage("Проверяем ответ","Ответ полностью получен. Проверяем формат данных.",70);
+   progressStage("Проверяем ответ","Данные полностью получены; проверяем JSON.",70);
    if(raw.length>3_000_000)throw Error("Ответ слишком большой.");
    let parsed;try{parsed=JSON.parse(raw);}catch{throw Error("Сервер вернул некорректный JSON.");}
    if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
