@@ -18,6 +18,19 @@ const dec=value=>{
   return obj;
 };
 let url="";
+window.MapkeppShare = Object.freeze({
+ preserveForOAuth(){
+  let encoded=new URLSearchParams(location.hash.slice(1)).get("config")||"";
+  if(!encoded){
+    try{encoded=enc(window.MapkeppStudio.getShareData());}
+    catch{return false;}
+  }
+  if(!encoded||encoded.length>4800)return false;
+  try{sessionStorage.setItem("mapkepp.share.pending",encoded);return true;}
+  catch{return false;}
+ }
+});
+
 function getURL(){
  const model=window.MapkeppStudio.getShareData();
  // A second, independent guard: the public link must not contain the Yandex token.
