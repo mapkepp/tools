@@ -12,6 +12,14 @@ const STATE_KEY="mapkepp.yandex.oauth.state."+OAUTH_CLIENT_ID;
 const CONSENT_KEY="mapkepp.yandex.oauth.consent."+OAUTH_CLIENT_ID;
 const TOKEN_TIME_KEY="mapkepp.yandex.oauth.issued."+OAUTH_CLIENT_ID;
 let busy=false;
+let loadEpoch=0;
+const activeSegmentRequests=new Set();
+function cancelOngoingLoad(){
+ loadEpoch++;
+ for(const controller of activeSegmentRequests)controller.abort();
+ activeSegmentRequests.clear();
+}
+
 const diagLines=[];
 let loadTicker=null, loadT0=0;
 function logSafe(code,details=""){
@@ -137,6 +145,7 @@ async function flushSafeTrace(){
 }
 async function loadSegment(token,index,attempt){
  const ctl=new AbortController();
+ activeSegmentRequests.add(ctl);
  const timeout=setTimeout(()=>ctl.abort(),10000);
  const started=performance.now();
  logSafe("segment_start","index="+index+" attempt="+attempt);
@@ -153,7 +162,15 @@ async function loadSegment(token,index,attempt){
    if(raw.length>15000)throw Error("oversized_segment");
    let part;
    try{part=JSON.parse(raw);}catch{throw Error("invalid_segment_json");}
-   if(!response.ok)throw Error(asHumanError(part?.error,response.status));
+   if(!response.ok){
+     const rateLimited=part?.error==="yandex_error"&&part?.upstream_status===429;
+     const message=rateLimited
+       ?"Яндекс временно ограничил частоту обращений. Не повторяйте запросы подряд."
+       :asHumanError(part?.error,response.status);
+     const err=new Error(message);
+     err.nonRetryable=rateLimited||(response.status>=400&&response.status<500&&response.status!==429);
+     throw err;
+   }
    if(part?.version!==1||part.index!==index||!Number.isInteger(part.total)||part.total<1||part.total>400||
       typeof part.fragment!=="string"||part.fragment.length>2500||
       typeof part.digest!=="string"||!/^[a-f0-9]{64}$/.test(part.digest))
@@ -164,21 +181,24 @@ async function loadSegment(token,index,attempt){
    const category=ctl.signal.aborted?"timeout":error?.name==="TypeError"?"network":"response_invalid";
    logSafe("segment_failed","index="+index+" attempt="+attempt+" elapsed_ms="+Math.round(performance.now()-started)+" category="+category);
    throw error;
- }finally{clearTimeout(timeout);}
+ }finally{clearTimeout(timeout);activeSegmentRequests.delete(ctl);}
 }
-async function getSegmentWithRetry(token,index){
+async function getSegmentWithRetry(token,index,epoch){
  for(let attempt=1;attempt<=2;attempt++){
+   if(epoch!==loadEpoch)throw Error("load_cancelled");
    try{return await loadSegment(token,index,attempt);}
    catch(error){
+     if(epoch!==loadEpoch)throw Error("load_cancelled");
+     if(error?.nonRetryable)throw error;
      if(attempt===2)throw Error("Не удалось получить часть "+(index+1)+" после двух попыток. Смотрите журнал диагностики.");
      logSafe("segment_retry","index="+index+" attempt="+attempt);
    }
  }
 }
-async function downloadHomeInSegments(token){
+async function downloadHomeInSegments(token,epoch){
  logSafe("fallback_start","mode=small_segments");
  progressStage("Получаем небольшой первый фрагмент","Вместо одного большого ответа используем короткие независимые запросы.",12);
- const first=await getSegmentWithRetry(token,0);
+ const first=await getSegmentWithRetry(token,0,epoch);
  const total=first.total,segments=Array(total).fill(null);
  segments[0]=first.fragment;
  let completed=1;
@@ -186,9 +206,9 @@ async function downloadHomeInSegments(token){
  progressStage("Загружаем небольшими частями","Получена 1 из "+total+" частей.",Math.min(90,10+Math.round(78/total)));
  let next=1;
  async function worker(){
-   while(next<total){
+   while(next<total&&epoch===loadEpoch){
      const index=next++;
-     const part=await getSegmentWithRetry(token,index);
+     const part=await getSegmentWithRetry(token,index,epoch);
      if(part.total!==total||part.digest!==first.digest){
        logSafe("snapshot_mismatch","index="+index+" total="+total);
        throw Error("Состав устройств изменился во время загрузки. Обновите список повторно.");
@@ -200,6 +220,8 @@ async function downloadHomeInSegments(token){
    }
  }
  await Promise.all(Array.from({length:Math.min(2,total-1)},()=>worker()));
+ if(epoch!==loadEpoch)throw Error("load_cancelled");
+ if(segments.some(part=>part===null))throw Error("Получены не все части ответа.");
  const raw=segments.join("");
  if(raw.length>2800000)throw Error("Ответ превышает безопасный предел 2,8 МБ.");
  const bytes=new TextEncoder().encode(raw);
@@ -228,10 +250,12 @@ async function loadFromYandex(){
  if(!$("proxyConsent").checked){status("Подтвердите согласие на загрузку устройств и обезличенную диагностику.",true);return;}
  if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик не настроен.",true);return;}
  busy=true;$("loadDevices").disabled=true;
+ const epoch=loadEpoch;
  try{
    startLoadTicker();
    logSafe("load_start","build=20261023-segmented-v1");
-   const parsed=await downloadHomeInSegments(token);
+   const parsed=await downloadHomeInSegments(token,epoch);
+   if(epoch!==loadEpoch || input.value.trim().replace(/^Bearer\s+/i,"")!==token)throw Error("load_cancelled");
    progressStage("Формируем интерфейс","Готовим список домов, комнат и устройств.",96);
    loadRaw(JSON.stringify(parsed));
    logSafe("load_success","status=200 bytes="+new TextEncoder().encode(JSON.stringify(parsed)).byteLength);
@@ -242,6 +266,10 @@ async function loadFromYandex(){
    $("pick").scrollIntoView({behavior:"smooth",block:"start"});
    setTimeout(endProgress,2000);
  }catch(error){
+   if(epoch!==loadEpoch||error?.message==="load_cancelled"){
+     logSafe("load_cancelled","completed=false");
+     return;
+   }
    endProgress();
    logSafe("load_failed","completed=false");
    const diagnostics=$("networkDiagnostics");if(diagnostics)diagnostics.open=true;
@@ -297,6 +325,7 @@ function clearAccountView(){
  $("accountLogin").textContent="";
 }
 function beginYandexAuth(){
+ cancelOngoingLoad();
  // Force the official Yandex account picker even if the browser remembers
  // a previous grant for this application. No user token is put in the URL.
  const stateBytes=new Uint8Array(24);
@@ -376,6 +405,9 @@ function initOAuth(){
  $("clearNetworkDiagnostics")?.addEventListener("click",()=>{diagLines.length=0;$("networkDiagnosticLog").textContent="Журнал очищен.";});
 
  $("clearOAuth").addEventListener("click",()=>{
+   cancelOngoingLoad();
+   traceQueue.length=0;
+   data=null;selected=null;$("actionArea").classList.remove("open");render();
    input.value="";input.type="password";input.readOnly=true;
    $("proxyConsent").checked=false;endProgress();clearAccountView();
    try{
@@ -387,6 +419,8 @@ function initOAuth(){
    status("Токен удалён из поля и временной памяти этого сайта.");
  });
  input.addEventListener("input",()=>{
+   cancelOngoingLoad();
+   data=null;selected=null;$("actionArea").classList.remove("open");render();
    clearAccountView();
    tokenCheck("Токен изменён. Его действительность и аккаунт ещё не проверены.",false);
  });
