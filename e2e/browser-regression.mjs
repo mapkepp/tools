@@ -74,7 +74,7 @@ try{
  assert.match(await page.locator("#status").innerText(),/Дом загружен/);
  assert.ok((await page.locator("#stats").innerText()).includes("1 устройств"));
  assert.match(await page.locator("#tokenCheck").innerText(),/Токен подтверждён/);
- const diagnostics=await page.locator("#networkDiagnosticLog").innerText();
+ const diagnostics=await page.locator("#networkDiagnosticLog").textContent();
  assert.match(diagnostics,/response_headers/);
  assert.match(diagnostics,/body_complete/);
  assert.match(diagnostics,/load_success/);
