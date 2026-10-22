@@ -254,7 +254,7 @@ async function loadFromYandex(){
  const epoch=loadEpoch;
  try{
    startLoadTicker();
-   logSafe("load_start","build=20261023-segmented-v1");
+   logSafe("load_start","build=20261023-stable-no-preflight-v2");
    const parsed=await downloadHomeInSegments(token,epoch);
    if(epoch!==loadEpoch || input.value.trim().replace(/^Bearer\s+/i,"")!==token)throw Error("load_cancelled");
    progressStage("Формируем интерфейс","Готовим список домов, комнат и устройств.",96);
