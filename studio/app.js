@@ -121,7 +121,7 @@ function initOAuth(){
  if(tempToken && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
     $("oauthToken").value=tempToken;
     status("Токен получен от Яндекса. Можно загрузить список устройств.");
-    if(proxyIsConfigured()&&$("proxyConsent").checked)queueMicrotask(loadFromYandex);
+    if(proxyIsConfigured()&&$("proxyConsent").checked&&!sessionStorage.getItem("mapkepp.share.pending"))queueMicrotask(loadFromYandex);
  }
  $("loadDevices").addEventListener("click",loadFromYandex);
  $("clearOAuth").addEventListener("click",()=>{
@@ -142,6 +142,7 @@ function initOAuth(){
    }catch{
      e.preventDefault();status("В этом браузере отключена временная память. Разрешите её для авторизации Яндекса или вставьте токен вручную.",true);return;
    }
+   try{const cfg=new URLSearchParams(location.hash.slice(1)).get("config");if(cfg)sessionStorage.setItem("mapkepp.share.pending",cfg);}catch{}
    const url=new URL(e.currentTarget.href);
    url.searchParams.set("state",state);
    e.currentTarget.href=url.toString();
