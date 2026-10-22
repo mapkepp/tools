@@ -23,5 +23,18 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install chromium
+      - name: Verify safe telemetry reaches production Supabase without a token
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=$(curl --silent --show-error --location --retry 2 --max-time 15 \
+            -o /tmp/anonymous-telemetry.json -w '%{http_code}' \
+            -H 'Origin: https://mapkepp.github.io' \
+            -H 'Content-Type: application/json' \
+            --data '{"operation":"technical_diagnostics","events":[{"code":"segment_start","index":0,"attempt":1,"elapsed_ms":1}]}' \
+            'https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/yandex-home')
+          test "$status" = 200
+          grep -q '"accepted":1' /tmp/anonymous-telemetry.json
+          echo 'PASS: token-free production telemetry accepted by Supabase'
       - name: Check published UI with fabricated data only
         run: node e2e/browser-regression.mjs
