@@ -140,7 +140,7 @@ function render(){
   const belonging=allDevices.filter(d=>!d.household_id||d.household_id===house.id);
   let count=0;
   for(const room of rooms){
-    const roomDev=belonging.filter(d=>(Array.isArray(room.devices)&&room.devices.includes(d.id)) || d.room===room.id).filter(match);
+    const roomDev=belonging.filter(d=>(Array.isArray(room.devices)&&room.devices.includes(d.id)) || d.room===room.id).filter(d=>match(d)||match(room)||match(house));
     if(!roomDev.length)continue;
     if(!count){}const roomBox=document.createElement("div");roomBox.className="room";
     const name=document.createElement("div");name.className="room-title";name.textContent="🚪 "+room.name;roomBox.append(name);
@@ -148,9 +148,9 @@ function render(){
     box.append(roomBox);count+=roomDev.length;
   }
   const assigned=new Set(rooms.flatMap(r=>(Array.isArray(r.devices)?r.devices:[])));
-  const unassigned=belonging.filter(d=>!assigned.has(d.id)&&!rooms.some(r=>r.id===d.room)).filter(match);
+  const unassigned=belonging.filter(d=>!assigned.has(d.id)&&!rooms.some(r=>r.id===d.room)).filter(d=>match(d)||match(house));
   if(unassigned.length){const wrap=document.createElement("div");wrap.className="room";const n=document.createElement("div");n.className="room-title";n.textContent="📦 Без комнаты";wrap.append(n);for(const d of unassigned){wrap.append(button("device",d));total++;}box.append(wrap);}
-  const groupItems=allGroups.filter(g=>(!g.household_id||g.household_id===house.id)&&match(g));
+  const groupItems=allGroups.filter(g=>(!g.household_id||g.household_id===house.id)&&(match(g)||match(house)));
   if(groupItems.length){const wrap=document.createElement("div");wrap.className="room";const n=document.createElement("div");n.className="room-title";n.textContent="🔗 Группы устройств";wrap.append(n);for(const g of groupItems){wrap.append(button("group",g,(g.devices||[]).length+" устройств"));total++;}box.append(wrap);}
   if(box.childElementCount){const block=section(tree,"🏠 "+house.name);block.append(box);}
  }
