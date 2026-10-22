@@ -74,6 +74,13 @@ try{
  assert.match(await page.locator("#status").innerText(),/Дом загружен/);
  assert.ok((await page.locator("#stats").innerText()).includes("1 устройств"));
  assert.match(await page.locator("#tokenCheck").innerText(),/Токен подтверждён/);
+ const diagnostics=await page.locator("#networkDiagnosticLog").innerText();
+ assert.match(diagnostics,/response_headers/);
+ assert.match(diagnostics,/body_complete/);
+ assert.match(diagnostics,/load_success/);
+ assert.ok(!diagnostics.includes("synthetic-fake-oauth-token-123456"),"Diagnostic log must not contain the token");
+ assert.equal(await page.locator(".load-activity .load-runner").count(),1);
+ console.log("PASS: safe client diagnostics, streaming byte trace, activity animation and token exclusion");
  console.log("PASS: on-page real app JavaScript renders simulated kitchen light without a profile entitlement");
  const home=await context.newPage();
  const homepageErrors=[];
