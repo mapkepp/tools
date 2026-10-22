@@ -46,6 +46,7 @@ test("Yandex OAuth account switch discards old token and forces account selectio
     location:{hash:"",origin:"https://mapkepp.github.io",pathname:"/tools/studio/",assign(url){redirects.push(url);}},
     crypto:{getRandomValues(bytes){bytes.fill(7);return bytes;}},
     URL,URLSearchParams,
+    queueMicrotask(){},
     console
   };
   vm.runInNewContext(app,browser,{timeout:3000});
