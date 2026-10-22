@@ -5,8 +5,8 @@
 > Все функции проекта бесплатны и доступны без поддержки автора. Переводы полностью добровольные; дополнительных возможностей или преимуществ они не дают.
 
 **Primary repository:** https://github.com/mapkepp/tools/  
-**Planned Pages URL (currently not live):** https://mapkepp.github.io/tools/  
-**Temporary working demo:** https://mapkepp.github.io/loto-generator/public-tools-hub/
+**Live website:** https://mapkepp.github.io/tools/  
+**Historical first demo:** https://mapkepp.github.io/loto-generator/public-tools-hub/ (not the primary site)
 
 **Status: MVP (22 October 2026).** Free, independent and unofficial community project.
 
@@ -34,14 +34,13 @@ All functionality is free and identical for everyone. Author support is **option
 
 Target: https://mapkepp.github.io/tools/
 
-The repository includes `.github/workflows/pages.yml`, which runs on pushes to `main` and on manual dispatch. Its first run failed at `actions/configure-pages` because GitHub Pages has **not been enabled**. GitHub's automatic `GITHUB_TOKEN` cannot perform initial Pages site enablement; the connected GitHub app cannot modify repository Pages settings.
+The repository publishes site changes automatically using `.github/workflows/pages.yml` whenever `index.html`, `assets/**` or the workflow itself changes on `main`. The workflow validates the Pages configuration, packages only public website files and publishes using GitHub Actions. 
 
-**One-time repository setting:** open https://github.com/mapkepp/tools/settings/pages → Build and deployment → **Source: GitHub Actions**. After this is enabled, rerun the failed workflow at https://github.com/mapkepp/tools/actions/workflows/pages.yml (or push another commit). No paid hosting is required.
-
+**Current live website status: PASS (HTTPS 200).** Public live HTML SHA-256 matched `raw.githubusercontent.com/mapkepp/tools/main/index.html` on 22 Oct 2026: `a868822214064227cf851a211dec9a17e75882bff68acc1c922979d8db14289d`. The donation link and lazy-loaded embedded widget were verified in a live browser. There is no need for the repository owner to manually press Run workflow after each edit.
 No computer or paid hosting is required.
 
 ## Current verification
-- Primary Pages HTTPS site: **FAIL / HTTP 404** until initial Pages enablement. Temporary old demo URL: PASS.
+- Primary Pages HTTPS site: **PASS HTTP 200**, deployed HTML content SHA-256 matches current source.
 - Six request/configuration variants: PASS (browser regression checks).
 - XML plist generation, true/false, integer number, ID and OAuth-token absence: PASS.
 - Apple AEA1 signer integration tested on scenario and VPN/non-VPN variants: PASS using **synthetic** IDs only.
