@@ -38,6 +38,22 @@ details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-to
 <p class="sub" style="margin-bottom:14px">Выбирайте не ID, а свои дома, комнаты, устройства, группы и сценарии. Генерация только поддерживаемых устройством действий.</p>
 <a href="./studio/" class="btn primary">Открыть новый конструктор →</a>
 </section>
+<section id="verifiedExamples" class="panel" style="margin:22px 0" aria-labelledby="verifiedExamplesTitle">
+  <div class="eyebrow">Зафиксированный результат генерации · 22.10.2026</div>
+  <h2 id="verifiedExamplesTitle" style="margin-top:8px">Подписанные примеры Apple Команд</h2>
+  <p class="sub" style="margin-bottom:12px">Ниже — <strong>те самые ранее успешно созданные и подписанные файлы</strong> для команды «Свет на кухне». Их подпись формата Apple AEA1 и SHA-256 проверяются при каждой публикации сайта. Внутри указаны <strong>учебные идентификаторы устройств</strong>: это образец работы генератора, а не настроенное управление вашей лампой.</p>
+  <div class="buttons" style="margin:14px 0">
+    <a class="btn primary" id="sampleKitchenOn" href="./examples/Kitchen_Light_ON.shortcut" download="Kitchen_Light_ON.shortcut" type="application/octet-stream">Скачать пример · Свет ВКЛ</a>
+    <a class="btn" id="sampleKitchenOff" href="./examples/Kitchen_Light_OFF.shortcut" download="Kitchen_Light_OFF.shortcut" type="application/octet-stream">Скачать пример · Свет ВЫКЛ</a>
+    <a class="btn" href="./studio/">Создать команду для своих устройств →</a>
+  </div>
+  <p class="sub" style="margin-bottom:8px"><strong>Подтверждено:</strong> создание, структура и подпись двух файлов. <strong>Не подтверждено:</strong> импорт и фактическое управление на iPhone. Токены в образцах отсутствуют; при установке команда запросит токен вашего Яндекс ID, но пример с учебным ID всё равно не управляет вашим устройством.</p>
+  <details><summary>Контрольные суммы и происхождение файлов</summary>
+  <p class="sub" style="margin:12px 0">Проверяемая копия из <a href="https://github.com/mapkepp/loto-generator/tree/efce885304d1b8b83d4f217a8440c8a80be59295/ios-shortcuts/yandex-smart-home" target="_blank" rel="noopener noreferrer">ранее сохранённого результата</a>. Сборка GitHub Pages прекращается при несовпадении SHA-256 или формата подписи.</p>
+  <p><code>ВКЛ: c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355</code></p>
+  <p><code>ВЫКЛ: 13988b58a64d296b45bc84fa4a634fdf20ae26c96a030eee525ce22462d0a5f1</code></p>
+  </details>
+</section>
 <main id="generator" class="layout"><section class="panel">
 <h2>Конструктор Apple Команды</h2><p class="sub">Введите ID объекта из вашего умного дома. Сайт создаст файл команды для iPhone.</p>
 <form id="builder" novalidate>
