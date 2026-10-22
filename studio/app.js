@@ -32,7 +32,7 @@ async function readBodyWithProgress(response,controller,attempt){
   const expected=Number(response.headers.get("content-length")||0);
   const size=Number.isFinite(expected)&&expected>0?expected:0;
   const bytesFromServer=response.headers.get("x-mapkepp-body-bytes");
-  logSafe("response_headers","attempt="+attempt+" status="+response.status+" expected_bytes="+size+" advertised_bytes="+(Number(bytesFromServer)||0)+" type="+(response.headers.get("content-type")?.includes("json")?"json":"other"));
+  logSafe("response_headers","attempt="+attempt+" status="+response.status+" expected_bytes="+size+" advertised_bytes="+(Number(bytesFromServer)||0)+" upstream_ms="+(Number(response.headers.get("x-mapkepp-upstream-ms"))||0)+" type="+(response.headers.get("content-type")?.includes("json")?"json":"other"));
   if(!response.body||typeof response.body.getReader!=="function"){
     logSafe("reader_fallback","browser stream reader unavailable");
     const text=await response.text();
@@ -63,6 +63,9 @@ async function readBodyWithProgress(response,controller,attempt){
     const text=new TextDecoder("utf-8",{fatal:true}).decode(joined);
     logSafe("body_complete","attempt="+attempt+" bytes="+received+" characters="+text.length);
     return text;
+  }catch(error){
+    logSafe("stream_stopped","attempt="+attempt+" received_bytes="+received+" category="+(controller.signal.aborted?"timeout":error?.name==="TypeError"?"network":"read_failure"));
+    throw error;
   }finally{reader.releaseLock();}
 }
 
@@ -154,6 +157,7 @@ async function loadFromYandex(){
  }catch(e){
    endProgress();
    logSafe("load_failed","completed=false");
+   const diagnostics=$("networkDiagnostics");if(diagnostics)diagnostics.open=true;
    tokenCheck("Загрузка не завершилась. Это не доказывает, что токен недействителен.");
    status(e?.name==="AbortError"?"Время ожидания истекло. Повторите запрос.":String(e?.message||e),true);
  }finally{stopLoadTicker();busy=false;$("loadDevices").disabled=false;}
