@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'services.html'
       - 'assets/**'
       - 'studio/**'
       - 'ios/**'
@@ -57,6 +58,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/index.html
+          cp services.html _site/services.html
           touch _site/.nojekyll
           if [[ -d assets ]]; then cp -R assets _site/assets; fi
           if [[ -d studio ]]; then cp -R studio _site/studio; fi
