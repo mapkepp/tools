@@ -3,3 +3,8 @@
 # OAuth token to the fixed Yandex API. No Supabase JWT or database is used.
 [functions.yandex-home]
 verify_jwt = false
+
+# Public signing relay validates Origin, XML placeholder, file size and upstream signatures.
+# The caller does not have a Supabase login; server-side validation is mandatory.
+[functions.shortcut-sign]
+verify_jwt = false
