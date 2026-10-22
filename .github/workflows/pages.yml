@@ -64,6 +64,26 @@ jobs:
           if [[ -d studio ]]; then cp -R studio _site/studio; fi
           if [[ -d ios ]]; then cp -R ios _site/ios; fi
           if [[ -d oauth ]]; then cp -R oauth _site/oauth; fi
+      - name: Include verified historic Apple Shortcut artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/examples
+          old_commit="efce885304d1b8b83d4f217a8440c8a80be59295"
+          source="https://raw.githubusercontent.com/mapkepp/loto-generator/${old_commit}/ios-shortcuts/yandex-smart-home"
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 "${source}/Kitchen_Light_ON.shortcut" -o _site/examples/Kitchen_Light_ON.shortcut
+          curl --fail --location --silent --show-error --retry 2 --max-time 30 "${source}/Kitchen_Light_OFF.shortcut" -o _site/examples/Kitchen_Light_OFF.shortcut
+          echo 'c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355  _site/examples/Kitchen_Light_ON.shortcut' | sha256sum --check
+          echo '13988b58a64d296b45bc84fa4a634fdf20ae26c96a030eee525ce22462d0a5f1  _site/examples/Kitchen_Light_OFF.shortcut' | sha256sum --check
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ('ON','OFF'):
+              path=Path('_site/examples/Kitchen_Light_'+name+'.shortcut')
+              payload=path.read_bytes()
+              assert payload[:4] == b'AEA1', f'{name}: signed Apple AEA1 header missing'
+              assert 1000 < len(payload) < 100000, f'{name}: unexpected artifact size'
+              print(name, 'verified AEA1:', len(payload), 'bytes; synthetic identifiers, no live device claim')
+          PY
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
