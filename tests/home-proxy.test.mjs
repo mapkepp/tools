@@ -32,6 +32,23 @@ test("CORS preflight allowed only for the published site",async()=>{
   assert.equal(bad.status,403);
   assert.equal(bad.headers.get("access-control-allow-origin"),null);
 });
+test("simple text/plain POST uses the same strict Origin and token checks",async()=>{
+ const plain={
+  method:"POST",
+  headers:new Map([["origin",origin],["content-type","text/plain;charset=UTF-8"]]),
+  text:async()=>JSON.stringify({access_token:token})
+ };
+ const accepted=await app.fetch(plain);
+ assert.equal(accepted.status,200);
+ const wrong={
+  ...plain,headers:new Map([["origin","https://attacker.invalid"],["content-type","text/plain;charset=UTF-8"]])
+ };
+ assert.equal((await app.fetch(wrong)).status,403);
+ const noToken={...plain,text:async()=>JSON.stringify({access_token:"invalid"})};
+ assert.equal((await app.fetch(noToken)).status,400);
+ const invalidType={...plain,headers:new Map([["origin",origin],["content-type","text/html"]])};
+ assert.equal((await app.fetch(invalidType)).status,415);
+});
 test("only a valid token goes to a fixed Yandex URL",async()=>{
   requested.length=0;
   const r=await app.fetch(request("POST",origin,{access_token:token}));
