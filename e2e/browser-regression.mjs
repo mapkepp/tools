@@ -38,6 +38,10 @@ try{
  await page.reload({waitUntil:"domcontentloaded"});
  assert.ok((await page.locator("#historyList").innerText()).includes("Открыть"));
  console.log("PASS: share restoration and history after reload");
+ assert.equal(await page.evaluate(()=>window.MapkeppShare.preserveForOAuth()),true);
+ assert.ok((await page.evaluate(()=>sessionStorage.getItem("mapkepp.share.pending"))).length>0);
+ console.log("PASS: chosen QR/link action saved to session during OAuth redirect without storing a token");
+
  // Simulated OAuth callback (never a real user's token).
  await page.evaluate(client=>{
    sessionStorage.setItem("mapkepp.yandex.oauth.state."+client,"fake-state-123");
@@ -47,6 +51,10 @@ try{
  await page.waitForURL("**/studio/?oauth=success",{timeout:12000});
  await page.locator("#oauthToken").waitFor();
  assert.equal(await page.locator("#oauthToken").inputValue(),"synthetic-test-token-123456");
+ assert.match(await page.locator("#jsonPreview").innerText(),/42/);
+ assert.equal(await page.evaluate(()=>sessionStorage.getItem("mapkepp.share.pending")),null);
+ console.log("PASS: OAuth callback restores QR configuration and chosen brightness action");
+
  await page.reload({waitUntil:"domcontentloaded"});
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  console.log("PASS: matching OAuth state, one-time transfer and no stale reload");
@@ -113,6 +121,22 @@ try{
  assert.equal(await page.locator(".load-activity .load-runner").count(),1);
  console.log("PASS: multi-segment checksum reconstruction, safe local trace, moving progress and token exclusion");
  console.log("PASS: on-page real app JavaScript renders simulated kitchen light without a profile entitlement");
+ await page.locator("button.item[data-id='light']").click();
+ await page.locator("#signConsent").check();
+ let safeSigningRequests=0;
+ await page.route("**/functions/v1/shortcut-sign",async route=>{
+   if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers:{"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-headers":"content-type"}});
+   safeSigningRequests++;
+   const post=route.request().postDataBuffer()?.toString("utf8")||"";
+   assert.match(post,/YANDEX_OAUTH_TOKEN/);
+   assert.ok(!post.includes("synthetic-fake-oauth-token-123456"));
+   return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/octet-stream"},body:Buffer.from("AEA1-synthetic-shortcut")});
+ });
+ await page.locator("#downloadSign").click();
+ await page.locator("#signedReady").waitFor({state:"visible",timeout:15000});
+ assert.match(await page.locator("#signedDownload").getAttribute("href"),/^blob:/);
+ assert.equal(safeSigningRequests,1);
+ console.log("PASS: signed AEA1 browser download flow via token-free proxy and Safari-facing save control");
  await page.locator("#clearOAuth").click();
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  assert.equal(await page.locator("button.item[data-id='light']").count(),0);
@@ -122,16 +146,14 @@ try{
  const homepageErrors=[];
  home.on("pageerror",err=>homepageErrors.push(String(err).slice(0,80)));
  await home.goto("https://mapkepp.github.io/tools/?browser-e2e=historic-shortcuts",{waitUntil:"domcontentloaded",timeout:45000});
- assert.equal(await home.locator("#generator").count(),1);
- assert.equal(await home.locator("#sign").count(),1);
- assert.equal(await home.locator('a[href="./studio/"]').count()>0,true);
- await home.locator("#targetId").fill("synthetic-kitchen-light");
- await home.locator("#capability").selectOption("on");
- assert.match(await home.locator("#preview").innerText(),/synthetic-kitchen-light/);
- await home.locator("#capability").selectOption("off");
- assert.match(await home.locator("#preview").innerText(),/false/);
- assert.equal(homepageErrors.length,0,"Classic homepage should not throw JavaScript errors");
- console.log("PASS: classic homepage generator ON/OFF preview, new studio link and zero JS errors");
+ assert.equal(await home.locator("#downloadSign").count(),1);
+ assert.equal(await home.locator("#sharePanel").count(),1);
+ assert.equal(await home.locator('script[src^="./frozen-2026-10-23/app.js"]').count(),1);
+ await home.locator("#demoButton").click();
+ await home.locator("button.item[data-id='l1']").click();
+ assert.match(await home.locator("#jsonPreview").innerText(),/api.iot.yandex.net/);
+ assert.equal(homepageErrors.length,0,"Frozen homepage must not throw JavaScript errors");
+ console.log("PASS: homepage frozen Studio snapshot renders example and contains no page errors");
  await home.close();
  if(errors.length)console.log("Browser page errors (redacted count):",errors.length);
 }finally{
