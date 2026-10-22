@@ -6,7 +6,7 @@ const read=p=>readFile(new URL("../"+p,import.meta.url),"utf8");
 
 test("all studio scripts parse without syntax errors",async()=>{
  for(const p of ["studio/app.js","studio/share.js","studio/yandex-widget.js","studio/history.js"]){
-   assert.doesNotThrow(()=>new vm.Script(await read(p),{filename:p}));
+   const source=await read(p);assert.doesNotThrow(()=>new vm.Script(source,{filename:p}));
  }
 });
 test("OAuth temp token is isolated from earlier clients and expires in five minutes",async()=>{
