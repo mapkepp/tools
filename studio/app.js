@@ -123,7 +123,7 @@ function queueSafeTrace(code,details=""){
    if(match){const n=Number(match[1]);if(Number.isSafeInteger(n)&&n<=3000000)event[field]=n;}
  }
  traceQueue.push(event);
- if(traceQueue.length>=9)void flushSafeTrace();
+ // Do not compete with inventory traffic; send the bounded trace after completion.
 }
 async function flushSafeTrace(){
  if(traceSending||!traceQueue.length||!proxyIsConfigured()||!$("proxyConsent")?.checked)return;
@@ -135,7 +135,7 @@ async function flushSafeTrace(){
      try{
        await fetch(backendUrl,{
          method:"POST",mode:"cors",credentials:"omit",redirect:"error",cache:"no-store",
-         referrerPolicy:"no-referrer",headers:{"Content-Type":"application/json"},
+         referrerPolicy:"no-referrer",headers:{"Content-Type":"text/plain;charset=UTF-8"},
          body:JSON.stringify({operation:"technical_diagnostics",events}),signal:ctl.signal,keepalive:true
        });
      }catch{/* Diagnostics must never prevent device loading or leak token. */}
@@ -146,13 +146,13 @@ async function flushSafeTrace(){
 async function loadSegment(token,index,attempt){
  const ctl=new AbortController();
  activeSegmentRequests.add(ctl);
- const timeout=setTimeout(()=>ctl.abort(),10000);
+ const timeout=setTimeout(()=>ctl.abort(),15000);
  const started=performance.now();
  logSafe("segment_start","index="+index+" attempt="+attempt);
  try{
    const response=await fetch(backendUrl,{
      method:"POST",mode:"cors",credentials:"omit",redirect:"error",cache:"no-store",
-     referrerPolicy:"no-referrer",headers:{"Content-Type":"application/json"},
+     referrerPolicy:"no-referrer",headers:{"Content-Type":"text/plain;charset=UTF-8"},
      body:JSON.stringify({access_token:token,operation:"segment",index}),signal:ctl.signal
    });
    logSafe("headers_received","index="+index+" attempt="+attempt+" status="+response.status+" elapsed_ms="+Math.round(performance.now()-started));
@@ -219,7 +219,7 @@ async function downloadHomeInSegments(token,epoch){
      progressStage("Загружаем небольшими частями","Получено "+completed+" из "+total+" частей.",Math.min(90,10+Math.round(78*completed/total)));
    }
  }
- await Promise.all(Array.from({length:Math.min(2,total-1)},()=>worker()));
+ await Promise.all(Array.from({length:Math.min(1,total-1)},()=>worker()));
  if(epoch!==loadEpoch)throw Error("load_cancelled");
  if(segments.some(part=>part===null))throw Error("Получены не все части ответа.");
  const raw=segments.join("");
@@ -249,6 +249,7 @@ async function loadFromYandex(){
  if(!/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(token)){status("Токен содержит недопустимые символы.",true);return;}
  if(!$("proxyConsent").checked){status("Подтвердите согласие на загрузку устройств и обезличенную диагностику.",true);return;}
  if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик не настроен.",true);return;}
+ cancelOngoingLoad();
  busy=true;$("loadDevices").disabled=true;
  const epoch=loadEpoch;
  try{
@@ -276,6 +277,8 @@ async function loadFromYandex(){
    tokenCheck("Загрузка не завершилась. Это не доказывает, что токен недействителен.");
    status(String(error?.message||error),true);
  }finally{
+   for(const ctl of activeSegmentRequests)ctl.abort();
+   activeSegmentRequests.clear();
    stopLoadTicker();busy=false;$("loadDevices").disabled=false;
    void flushSafeTrace();
  }
