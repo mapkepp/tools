@@ -18,6 +18,17 @@
 - The device studio receives an OAuth token through Yandex ID or optional manual input. The signed iPhone Shortcut separately prompts for a token at import. The unsigned Shortcut contains **no token** but does contain the selected object ID, which is disclosed to Shortcuty when signing.
 - Experimental VPN disconnect/reconnect with explicit warning; users select their local VPN profile after importing. A failed action may leave VPN disconnected.
 
+## Preserved, actually signed kitchen light examples
+
+The [public main page](https://mapkepp.github.io/tools/#verifiedExamples) now presents the **original successful signed Apple AEA1 Shortcut files** from 22 October 2026, alongside local QR codes and separate copy/download links for ON and OFF:
+
+- [Kitchen_Light_ON.shortcut](https://mapkepp.github.io/tools/examples/Kitchen_Light_ON.shortcut), SHA-256 `c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355`
+- [Kitchen_Light_OFF.shortcut](https://mapkepp.github.io/tools/examples/Kitchen_Light_OFF.shortcut), SHA-256 `13988b58a64d296b45bc84fa4a634fdf20ae26c96a030eee525ce22462d0a5f1`
+
+The source artifacts are retained in the older public `mapkepp/loto-generator` repository at pinned revision `efce885304d1b8b83d4f217a8440c8a80be59295`. GitHub Pages packages **those exact signed bytes** and rejects a release if SHA-256 or Apple `AEA1` format differs. A separate [public download workflow](https://github.com/mapkepp/tools/actions/workflows/verify-example-shortcuts.yml) verifies the artifacts after deployment, and [Chromium regression tests](https://github.com/mapkepp/tools/actions/workflows/browser-regression.yml) check the local QR display.
+
+**Crucial distinction:** these are verified examples of **successful generation and cryptographic signing**, not proof of physical device control. They use synthetic device identifiers; no OAuth token is embedded or published. They prompt for a token on import, but to control a real appliance the user must generate a new command with their actual device ID in the Studio.
+
 ## Share a ready-to-install iPhone Shortcut
 
 In the [Smart Home Studio](https://mapkepp.github.io/tools/studio/), choose an action and press **«Создать ссылку»**. The generated self-contained link and locally generated QR code preserve the chosen device/action across phones and computers, **without including any OAuth token**. The recipient can open it on iPhone, authorize their Yandex account, and install a signed `.shortcut`. The installation prompt includes where to obtain and copy a token. Separate **«Скопировать мой токен»** and **account name/avatar** are shown as permissions allow.
