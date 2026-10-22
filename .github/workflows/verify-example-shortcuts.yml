@@ -28,7 +28,7 @@ jobs:
           grep -q 'id="sharePanel"' /tmp/mapkepp-public/index.html
           grep -q 'src="./frozen-2026-10-23/app.js' /tmp/mapkepp-public/index.html
           grep -q '<base href="./studio/">' /tmp/mapkepp-public/index.html
-          test "$(git hash-object index.html)" = "92197c2ad29e31fd72cbb3d62bdef38577b09220"
+          test "$(git hash-object /tmp/mapkepp-public/index.html)" = "92197c2ad29e31fd72cbb3d62bdef38577b09220"
           echo "PASS: frozen homepage SHA and isolated Studio assets"
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_ON.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_ON.shortcut
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_OFF.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_OFF.shortcut
