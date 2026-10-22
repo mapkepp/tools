@@ -82,18 +82,52 @@ test("compact transport preserves all actionable settings and hierarchy, drops b
   assert.deepEqual(reduced.rooms[0].devices,["light"]);
   assert.deepEqual(reduced.groups[0].devices,["light"]);
   assert.equal(reduced.devices[0].room,"room");
-  assert.deepEqual(reduced.devices[0].capabilities.map(x=>x.type),[
+  const byType=Object.fromEntries(reduced.devices[0].capabilities.map(c=>[c.type,c]));
+  assert.deepEqual(Object.keys(byType).sort(),[
     "devices.capabilities.on_off","devices.capabilities.range",
     "devices.capabilities.mode","devices.capabilities.color_setting"
-  ]);
-  assert.equal(reduced.devices[0].capabilities[1].parameters.range.max,100);
-  assert.equal(reduced.devices[0].capabilities[1].state.value,42);
-  assert.deepEqual(reduced.devices[0].capabilities[2].parameters.modes,[{value:"auto"}]);
-  assert.equal(reduced.devices[0].capabilities[3].parameters.temperature_k.max,6000);
+  ].sort());
+  assert.equal(byType["devices.capabilities.range"].parameters.range.max,100);
+  assert.equal(byType["devices.capabilities.range"].state,undefined);
+  assert.deepEqual(byType["devices.capabilities.mode"].parameters.modes,[{value:"auto"}]);
+  assert.equal(byType["devices.capabilities.color_setting"].parameters.temperature_k.max,6000);
   assert.equal(reduced.scenarios[0].is_active,false);
   assert.equal(reduced.devices[0].external_id,undefined);
   assert.equal(reduced.request_id,undefined);
   assert.equal(JSON.stringify(reduced).includes("unused"),false);
+});
+test("canonical segment snapshot is stable across changing live states and API list order",async()=>{
+  const devices=Array.from({length:80},(_,i)=>({
+    id:"device_"+i,name:"Лампа "+i,household_id:"home",type:"devices.types.light",
+    capabilities:[{type:"devices.capabilities.on_off",parameters:{},state:{value:false}},
+      {type:"devices.capabilities.range",parameters:{instance:"brightness",range:{min:0,max:100}},state:{value:50}}]
+  }));
+  let n=0;
+  const changing=compiler(async()=>{
+    const backward=(n++%2)===1;
+    const shifted=devices.map(d=>({...d,capabilities:d.capabilities.map(c=>({...c,state:{value:backward?99:1}})).reverse()}));
+    const response={
+      status:"ok",households:[{id:"home",name:"Дом"}],rooms:[],
+      devices:backward?shifted.reverse():shifted,groups:[],scenarios:[]
+    };
+    return new Response(JSON.stringify(response),{status:200});
+  },{info(){}},AbortSignal);
+  const fragments=[];
+  let expectedHash="";
+  for(let index=0;;index++){
+    const resp=await changing.fetch(request("POST",origin,{access_token:token,operation:"segment",index}));
+    assert.equal(resp.status,200);
+    const part=await resp.json();
+    if(!expectedHash)expectedHash=part.digest;
+    assert.equal(part.digest,expectedHash);
+    fragments.push(part.fragment);
+    if(index+1===part.total)break;
+  }
+  const assembled=fragments.join("");
+  assert.equal(JSON.parse(assembled).devices.length,80);
+  assert.equal(JSON.stringify(JSON.parse(assembled)).includes('"state"'),false);
+  const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(assembled));
+  assert.equal(Buffer.from(hash).toString("hex"),expectedHash);
 });
 test("segment responses can reassemble a large device listing without cloud storage",async()=>{
   const bulky={
