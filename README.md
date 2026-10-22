@@ -26,6 +26,12 @@ The special **«команда со встроенным токеном»** opti
 
 [User guide (Russian)](docs/SHARE-AND-TOKEN-RU.md) · [Services, privacy and software credits](https://mapkepp.github.io/tools/services.html).
 
+## Local, token-free history
+
+The Studio now includes an opt-in **«Мои сохранённые команды»** panel. Users can save up to 30 selected shortcut configurations on their own device and later restore, delete, import or export them as a JSON archive. No OAuth token, password, Yandex profile, cookie or cloud account is added to the saved configuration. Device names and internal device IDs **are** present in the local archive, so users should not publish it. The archive is not cross-device synced automatically. Clearing browser storage or private browsing may remove it.
+
+Account status: the official personal Yandex ID button mounts when the page opens, provided browser privacy settings permit its SDK and cookies. A token is never inferred from an existing Yandex cookie; access still requires Yandex confirmation. Temporary OAuth tokens are isolated by Client ID, accepted only immediately after a state-checked callback and cleared after use. Devices now render before optional profile lookup. For real device access and Apple Shortcut import, user-side tests remain required.
+
 ## Smart Home device explorer
 
 Live: https://mapkepp.github.io/tools/studio/
