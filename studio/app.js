@@ -69,6 +69,7 @@ async function loadFromYandex(){
    if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
    progressStage("Готовим список","Сортируем дома, комнаты, устройства и сценарии.",85);
    loadRaw(JSON.stringify(parsed));
+   tokenCheck("Токен подтверждён API Яндекс Умного дома: устройства и сценарии успешно загружены.",true);
    progressStage("Проверяем аккаунт Яндекса","Получаем имя и аватар, если это разрешено Яндексом.",90);
    await readYandexIdentity(token);
    progressStage("Готово!","Ваши объекты отображены ниже.",100);
@@ -76,6 +77,7 @@ async function loadFromYandex(){
    setTimeout(endProgress,2000);
  }catch(e){
    endProgress();
+   tokenCheck("Токен не подтверждён. Проверьте аккаунт, права iot:view или получите новый токен через «Выбрать другой аккаунт».");
    status(e?.name==="AbortError"?"Время ожидания истекло. Повторите запрос.":String(e?.message||e),true);
  }finally{busy=false;$("loadDevices").disabled=false;}
 }
@@ -100,14 +102,66 @@ async function readYandexIdentity(token){
   const display=[info.display_name,info.real_name,info.first_name,info.login].find(x=>typeof x==="string"&&x.trim());
   name.textContent=display||info.login;
   login.textContent="Яндекс ID: "+info.login;
+  tokenCheck("Токен подтверждён. Аккаунт Яндекса: "+info.login+". Устройства загружены.",true);
   if(!info.is_avatar_empty && typeof info.avatar_id==="string"&&/^[a-zA-Z0-9_-]{1,100}$/.test(info.avatar_id)){
     avatar.src="https://avatars.yandex.net/get-yapic/"+encodeURIComponent(info.avatar_id)+"/islands-75";
     avatar.hidden=false;
   }
  }catch{
-  name.textContent="Яндекс ID подключён";
+  name.textContent="Аккаунт не определён";
   login.textContent="Имя и фото недоступны. В настройках OAuth-приложения могут потребоваться права login:info и login:avatar.";
  }
+}
+function tokenCheck(message,valid=false){
+ const panel=$("tokenCheck");
+ if(!panel)return;
+ panel.textContent=message;
+ panel.classList.toggle("warning",!valid);
+}
+function clearAccountView(){
+ $("accountInfo").hidden=true;
+ $("accountAvatar").hidden=true;
+ $("accountAvatar").removeAttribute("src");
+ $("accountName").textContent="Аккаунт Яндекса";
+ $("accountLogin").textContent="";
+}
+function beginYandexAuth(){
+ // Force the official Yandex account picker even if the browser remembers
+ // a previous grant for this application. No user token is put in the URL.
+ const stateBytes=new Uint8Array(24);
+ crypto.getRandomValues(stateBytes);
+ const state=Array.from(stateBytes,b=>b.toString(16).padStart(2,"0")).join("");
+ try{
+   sessionStorage.setItem(STATE_KEY,state);
+   sessionStorage.setItem(CONSENT_KEY,$("proxyConsent").checked?"yes":"no");
+   sessionStorage.removeItem(TEMP_TOKEN_KEY);
+   const cfg=new URLSearchParams(location.hash.slice(1)).get("config");
+   if(cfg)sessionStorage.setItem("mapkepp.share.pending",cfg);
+ }catch{
+   status("Браузер запретил временное хранение. Разрешите его для сайта или вставьте токен вручную.",true);
+   return;
+ }
+ $("oauthToken").value="";
+ clearAccountView();
+ tokenCheck("Выберите учётную запись на официальном сайте Яндекса. Старый токен очищен.");
+ // Reset the displayed Yandex home; never display stale devices under the next account.
+ if(!location.hash.includes("config=")){
+   data=null;selected=null;
+   $("actionArea").classList.remove("open");
+   render();
+ }
+ const url=new URL($("yandexAuth").href);
+ url.searchParams.set("state",state);
+ url.searchParams.set("force_confirm","yes");
+ const loginHint=$("loginHint").value.trim();
+ if(loginHint){
+   if(loginHint.length>120||/[?#&\s]/.test(loginHint)){
+     status("Логин Яндекса указан некорректно. Введите логин или адрес почты.",true);
+     return;
+   }
+   url.searchParams.set("login_hint",loginHint);
+ }else url.searchParams.delete("login_hint");
+ location.assign(url.toString());
 }
 function initOAuth(){
  setBackendNotice();
@@ -118,36 +172,37 @@ function initOAuth(){
    if(sessionStorage.getItem(CONSENT_KEY)==="yes")$("proxyConsent").checked=true;
    sessionStorage.removeItem(CONSENT_KEY);
  }catch{}
- if(tempToken && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
-    $("oauthToken").value=tempToken;
-    status("Токен получен от Яндекса. Можно загрузить список устройств.");
-    if(proxyIsConfigured()&&$("proxyConsent").checked&&!sessionStorage.getItem("mapkepp.share.pending"))queueMicrotask(loadFromYandex);
+ if(tempToken){
+   if(/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
+     $("oauthToken").value=tempToken;
+     tokenCheck("Токен получен от Яндекса, но ещё не проверен по API. Нажмите «Загрузить мои устройства».");
+     status("Токен получен после входа. Проверяем его разрешения и принадлежность аккаунту.");
+     if(proxyIsConfigured()&&$("proxyConsent").checked&&!sessionStorage.getItem("mapkepp.share.pending"))queueMicrotask(loadFromYandex);
+   }else{
+     tokenCheck("Яндекс вернул значение, не похожее на OAuth-токен. Получите разрешение заново через «Выбрать другой аккаунт».");
+     status("Получен некорректный формат токена. Устаревшее значение не используется.",true);
+   }
  }
  $("loadDevices").addEventListener("click",loadFromYandex);
  $("clearOAuth").addEventListener("click",()=>{
-    $("oauthToken").value="";$("proxyConsent").checked=false;endProgress();
-    $("accountInfo").hidden=true;$("accountAvatar").hidden=true;$("accountAvatar").removeAttribute("src");
-    try{sessionStorage.removeItem(TEMP_TOKEN_KEY);sessionStorage.removeItem(STATE_KEY);sessionStorage.removeItem(CONSENT_KEY);}catch{}
-    status("Токен удалён из поля и временной памяти вкладки.");
- });
- $("oauthToken").addEventListener("paste",()=>status("После вставки токена нажмите «Загрузить мои устройства»."));
- $("yandexAuth").addEventListener("click",e=>{
-   // A random state ties the returning token to this tab, preventing unsolicited
-   // fragments from being accepted as an authorised login.
-   let bytes=new Uint8Array(24);crypto.getRandomValues(bytes);
-   const state=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
+   $("oauthToken").value="";$("oauthToken").type="password";
+   $("proxyConsent").checked=false;endProgress();clearAccountView();
    try{
-     sessionStorage.setItem(STATE_KEY,state);
-     sessionStorage.setItem(CONSENT_KEY,$("proxyConsent").checked?"yes":"no");
-   }catch{
-     e.preventDefault();status("В этом браузере отключена временная память. Разрешите её для авторизации Яндекса или вставьте токен вручную.",true);return;
-   }
-   try{const cfg=new URLSearchParams(location.hash.slice(1)).get("config");if(cfg)sessionStorage.setItem("mapkepp.share.pending",cfg);}catch{}
-   const url=new URL(e.currentTarget.href);
-   url.searchParams.set("state",state);
-   e.currentTarget.href=url.toString();
+     sessionStorage.removeItem(TEMP_TOKEN_KEY);
+     sessionStorage.removeItem(STATE_KEY);
+     sessionStorage.removeItem(CONSENT_KEY);
+   }catch{}
+   tokenCheck("Токен очищен. Для входа под другим аккаунтом нажмите «Выбрать другой аккаунт».");
+   status("Личный токен удалён из формы и временного хранилища.");
  });
+ $("oauthToken").addEventListener("input",()=>{
+   clearAccountView();
+   tokenCheck("Токен изменён вручную. Его действительность и аккаунт ещё не проверены.");
+ });
+ $("yandexAuth").addEventListener("click",e=>{e.preventDefault();beginYandexAuth();});
+ $("switchYandexAccount").addEventListener("click",beginYandexAuth);
 }
+
 const clone=s=>JSON.parse(JSON.stringify(s));
 const demo={
  status:"ok",
