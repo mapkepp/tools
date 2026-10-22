@@ -9,6 +9,13 @@ const STATE_KEY="mapkepp.yandex.oauth.state";
 const hash=new URLSearchParams(location.hash.replace(/^#/,""));
 const query=new URLSearchParams(location.search);
 const token=hash.get("access_token")||"";
+const tokenType=hash.get("token_type")||"";
+const lifetime=hash.get("expires_in")||"";
+const granted=hash.get("scope")||"";
+const invalidToken= !/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(token) ||
+   (tokenType && tokenType.toLowerCase()!=="bearer") ||
+   (lifetime && (!/^\d{1,12}$/.test(lifetime)||Number(lifetime)<=0)) ||
+   (granted && !granted.split(/[\s,]+/).includes("iot:view"));
 const returnedState=hash.get("state")||query.get("state")||"";
 const error=hash.get("error")||query.get("error")||"";
 let expectedState="";
@@ -22,7 +29,13 @@ if(error){
   $("copy").hidden=true;
   $("helper").hidden=true;
 }else if(token){
-  if(!expectedState||!returnedState||expectedState!==returnedState){
+  if(invalidToken){
+    $("result").textContent="Яндекс вернул токен без подходящего формата, срока действия или права iot:view.";
+    $("info").textContent="Войдите через «Выбрать другой аккаунт» и разрешите доступ к умному дому.";
+    $("actions").hidden=false;
+    $("copy").hidden=true;
+    $("helper").hidden=true;
+  }else if(!expectedState||!returnedState||expectedState!==returnedState){
     $("result").textContent="Не удалось проверить безопасность возврата из Яндекса (state).";
     $("info").textContent="Токен отклонён. Вернитесь в конструктор и повторите вход из той же вкладки.";
     $("actions").hidden=false;
