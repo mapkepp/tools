@@ -109,7 +109,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="divider"></div>
 <p><strong>Что будет отправлено Яндексу</strong></p><pre id="jsonPreview"></pre>
 <div class="divider"></div>
-<label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> на внешний сервер подписи Shortcuty</label>
+<label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> через обработчик Mapkepp (Supabase) во внешний сервис подписи Shortcuty</label>
 <p class="hint">При подписи сервер увидит выбранный объект и действие, но не пароль и не OAuth-токен.</p>
 <div class="flex"><button type="button" class="primary" id="downloadSign">📥 Подписать и скачать</button><button type="button" id="downloadUnsigned">Скачать файл без подписи</button></div>
 <div id="signedReady" class="notice" hidden style="margin-top:12px">
