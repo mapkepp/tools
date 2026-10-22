@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/browser-regression.yml'
       - 'e2e/browser-regression.mjs'
+      - 'e2e/live-sign-smoke.mjs'
 
 permissions:
   contents: read
@@ -38,3 +39,5 @@ jobs:
           echo 'PASS: token-free production telemetry accepted by Supabase'
       - name: Check published UI with fabricated data only
         run: node e2e/browser-regression.mjs
+      - name: Confirm real external signing with a synthetic tokenless Shortcut
+        run: node e2e/live-sign-smoke.mjs
