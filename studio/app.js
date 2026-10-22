@@ -290,19 +290,19 @@ function xml(v){
  throw Error("Неизвестный тип данных.");
 }
 function uid(){if(crypto?.randomUUID)return crypto.randomUUID().toUpperCase();const a=new Uint8Array(16);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase();}
-function file(){
+function file(embeddedToken=""){
  const p=request(),name=$("shortcutName").value.trim();
  if(!name||name.length>60)throw Error("Введите название команды до 60 символов.");
  const id=uid(),headers=dict(p.body?{"Content-Type":"application/json"}:{});
  headers.Value.WFDictionaryFieldValueItems.push({WFKey:tt("Authorization"),WFItemType:0,WFValue:tt("Bearer \uFFFC",{"{7, 1}":{Type:"ActionOutput",OutputUUID:id,OutputName:"Text"}})});
  const acts=[
- {WFWorkflowActionIdentifier:"is.workflow.actions.gettext",WFWorkflowActionParameters:{UUID:id,WFTextActionText:"YANDEX_OAUTH_TOKEN"}},
+ {WFWorkflowActionIdentifier:"is.workflow.actions.gettext",WFWorkflowActionParameters:{UUID:id,WFTextActionText:embeddedToken||"YANDEX_OAUTH_TOKEN"}},
  {WFWorkflowActionIdentifier:"is.workflow.actions.downloadurl",WFWorkflowActionParameters:{UUID:uid(),WFURL:p.url,WFHTTPMethod:"POST",ShowHeaders:true,WFHTTPHeaders:headers,...(p.body?{WFHTTPBodyType:"JSON",WFJSONValues:dict(p.body)}:{})}}
  ];
  const wf={WFWorkflowName:name,WFWorkflowActions:acts,WFWorkflowClientVersion:"4033.0.4.3",
  WFWorkflowMinimumClientVersion:900,WFWorkflowMinimumClientVersionString:"900",
  WFWorkflowHasShortcutInputVariables:false,WFWorkflowHasOutputFallback:false,WFWorkflowIcon:{WFWorkflowIconGlyphNumber:61440,WFWorkflowIconStartColor:4282601983},
- WFWorkflowImportQuestions:[{ActionIndex:0,Category:"Parameter",ParameterKey:"WFTextActionText",Text:"Введите OAuth-токен Яндекса без слова Bearer (на iPhone)",DefaultValue:""}],
+ WFWorkflowImportQuestions:embeddedToken?[]:[{ActionIndex:0,Category:"Parameter",ParameterKey:"WFTextActionText",Text:"Токен Яндекса. Если токена нет: откройте https://mapkepp.github.io/tools/studio/ на iPhone → Войти через Яндекс → Скопировать токен → вернуться в Команды и вставить его сюда. Не делитесь этим токеном.",DefaultValue:""}],
  WFWorkflowInputContentItemClasses:["WFStringContentItem"],WFWorkflowOutputContentItemClasses:[],WFWorkflowTypes:["WFWorkflowTypeShowInSearch"],WFQuickActionSurfaces:[]};
  const content='<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">'+xml(wf)+"</plist>";
  const safe=name.replace(/[^0-9A-Za-zА-Яа-яЁё _-]/g,"_").trim().slice(0,50)||"Yandex";
@@ -330,6 +330,65 @@ $("downloadSign").addEventListener("click",()=>{
   const input=document.createElement("input");input.type="file";input.name="file";input.files=dt.files;form.append(input);document.body.append(form);form.submit();form.remove();
   status("Команда отправлена на подпись без токена. Проверьте открывшуюся вкладку и загрузки браузера.");
  }catch(e){status(e.message,true);}
+});
+// Only metadata about a chosen action goes into a share link. Never an OAuth token.
+window.MapkeppStudio = Object.freeze({
+ getShareData(){
+   const r=request(), a=currentAction();
+   const value = a.cap === "scenario" ? null : (selected.kind === "group" ? r.body.actions[0].state.value : r.body.devices[0].actions[0].state.value);
+   return {v:1,k:selected.kind,id:selected.obj.id,n:selected.obj.name,t:$("shortcutName").value.trim(),
+     c:a.cap,i:a.instance||"",value,
+     ...(a.range?{range:{min:a.range.min,max:a.range.max,precision:a.range.precision||1}}:{}),
+     ...(a.modes?{modes:a.modes.map(m=>m.value)}:{})};
+ },
+ restoreShare(o){
+   if(!["device","group","scenario"].includes(o.k) || !/^[a-zA-Z0-9_.:-]{1,200}$/.test(o.id)
+    || typeof o.n!=="string" || !o.n.trim() || o.n.length>120
+    || typeof o.t!=="string" || !o.t.trim() || o.t.length>60)throw Error("Некорректная ссылка на команду.");
+   const kind=o.k;
+   let capability=null;
+   if(kind!=="scenario"){
+     if(o.c==="on_off" && o.i==="on" && typeof o.value==="boolean"){
+       capability={type:"devices.capabilities.on_off",parameters:{},state:{instance:"on",value:o.value}};
+     }else if(["range","color_setting"].includes(o.c) && /^[a-z0-9_]{1,60}$/.test(o.i)
+       && o.range && Number.isFinite(o.range.min) && Number.isFinite(o.range.max)
+       && Number.isFinite(o.value) && o.value>=o.range.min && o.value<=o.range.max
+       && o.range.max>o.range.min && o.range.max-o.range.min<=100000){
+       const bounds={min:o.range.min,max:o.range.max,precision:o.range.precision||1};
+       capability={type:"devices.capabilities."+o.c,
+         parameters:o.c==="range"?{instance:o.i,range:bounds}:{temperature_k:bounds},
+         state:{instance:o.i,value:o.value}};
+     }else if(o.c==="mode" && /^[a-z0-9_]{1,60}$/.test(o.i)
+       && Array.isArray(o.modes) && o.modes.length<=40
+       && o.modes.every(m=>typeof m==="string"&&/^[a-zA-Z0-9_.-]{1,80}$/.test(m))
+       && o.modes.includes(o.value)){
+       capability={type:"devices.capabilities.mode",
+         parameters:{instance:o.i,modes:o.modes.map(value=>({value}))},state:{instance:o.i,value:o.value}};
+     }else throw Error("Недопустимое действие в ссылке.");
+   }else if(o.c!=="scenario")throw Error("Некорректный сценарий.");
+   const object={id:o.id,name:o.n,is_active:true,...(capability?{capabilities:[capability]}:{})};
+   data={status:"ok",households:[{id:"shared",name:"Команда по ссылке"}],rooms:[],
+     devices:kind==="device"?[{...object,household_id:"shared"}]:[],
+     groups:kind==="group"?[{...object,household_id:"shared",devices:[]}]:[],
+     scenarios:kind==="scenario"?[object]:[]};
+   selected=null;example=false;$("search").value="";render();pick(kind,object);
+   $("shortcutName").value=o.t;
+   const possibilities=$("actionSelect")._actions||[];
+   const option=possibilities.findIndex(a=>a.cap===o.c && a.instance===(o.i||"")
+     && (a.cap!=="on_off" || a.value===o.value));
+   if(option<0)throw Error("Действие в ссылке не поддерживается.");
+   $("actionSelect").value=String(option);
+   renderInput();
+   if(o.c==="range"||o.c==="color_setting"||o.c==="mode")$("actionValue").value=String(o.value);
+   updatePreview();
+   status("Открыта подготовленная команда. Проверьте параметры и нажмите «Подписать и скачать». Для управления нужен токен аккаунта, имеющего доступ к выбранному устройству.");
+ },
+ signWithEmbeddedToken(){
+   const token=$("oauthToken").value.trim().replace(/^Bearer\\s+/i,"");
+   if(!/^[a-zA-Z0-9_.~+\\/=-]{12,4096}$/.test(token))throw Error("Вставьте действительный токен в поле Яндекса.");
+   return file(token);
+ },
+ showStatus:status
 });
 initOAuth();
 render();
