@@ -12,6 +12,60 @@ const STATE_KEY="mapkepp.yandex.oauth.state."+OAUTH_CLIENT_ID;
 const CONSENT_KEY="mapkepp.yandex.oauth.consent."+OAUTH_CLIENT_ID;
 const TOKEN_TIME_KEY="mapkepp.yandex.oauth.issued."+OAUTH_CLIENT_ID;
 let busy=false;
+const diagLines=[];
+let loadTicker=null, loadT0=0;
+function logSafe(code,details=""){
+  const line=new Date().toISOString().slice(11,23)+"Z | "+code+(details?" | "+details:"");
+  diagLines.push(line);
+  if(diagLines.length>100)diagLines.shift();
+  const out=$("networkDiagnosticLog");
+  if(out){out.textContent=diagLines.join("\n");out.scrollTop=out.scrollHeight;}
+}
+function updateElapsed(){
+  const elapsed=Math.round((performance.now()-loadT0)/1000);
+  const out=$("loadElapsed");
+  if(out)out.textContent="Прошло "+elapsed+" с · индикатор движения показывает ожидание, а не объём данных";
+}
+function startLoadTicker(){loadT0=performance.now();if(loadTicker)clearInterval(loadTicker);updateElapsed();loadTicker=setInterval(updateElapsed,250);}
+function stopLoadTicker(){if(loadTicker)clearInterval(loadTicker);loadTicker=null;}
+async function readBodyWithProgress(response,controller,attempt){
+  const expected=Number(response.headers.get("content-length")||0);
+  const size=Number.isFinite(expected)&&expected>0?expected:0;
+  const bytesFromServer=response.headers.get("x-mapkepp-body-bytes");
+  logSafe("response_headers","attempt="+attempt+" status="+response.status+" expected_bytes="+size+" advertised_bytes="+(Number(bytesFromServer)||0)+" type="+(response.headers.get("content-type")?.includes("json")?"json":"other"));
+  if(!response.body||typeof response.body.getReader!=="function"){
+    logSafe("reader_fallback","browser stream reader unavailable");
+    const text=await response.text();
+    logSafe("body_complete","attempt="+attempt+" characters="+text.length);
+    return text;
+  }
+  const reader=response.body.getReader(),chunks=[];
+  let received=0,lastMark=0,first=true;
+  try{
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      if(!value)continue;
+      received+=value.byteLength;
+      if(first){logSafe("first_chunk","attempt="+attempt+" bytes="+value.byteLength);first=false;}
+      if(received>3000000)throw Error("body_size_limit");
+      chunks.push(value);
+      if(received-lastMark>=131072){logSafe("transfer","attempt="+attempt+" bytes="+received);lastMark=received;}
+      if(size>0){
+        const fraction=Math.min(1,received/size);
+        progressStage("Загружаем данные","Получено "+received+" байт из заявленных "+size+" (по сетевым заголовкам).",Math.min(89,65+Math.round(fraction*23)));
+      }else{
+        progressStage("Загружаем данные","Получено "+received+" байт; полный размер сервер не указал.");
+      }
+    }
+    const joined=new Uint8Array(received);let offset=0;
+    for(const chunk of chunks){joined.set(chunk,offset);offset+=chunk.byteLength;}
+    const text=new TextDecoder("utf-8",{fatal:true}).decode(joined);
+    logSafe("body_complete","attempt="+attempt+" bytes="+received+" characters="+text.length);
+    return text;
+  }finally{reader.releaseLock();}
+}
+
 function proxyIsConfigured(){
   try{
     const u=new URL(backendUrl);
@@ -52,35 +106,45 @@ async function loadFromYandex(){
  if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик недоступен. Токен не отправлялся. Можно импортировать ранее сохранённый JSON.",true);return;}
  busy=true;$("loadDevices").disabled=true;
  try{
-   progressStage("Проверка подключения","Подготовка защищённого запроса…",15);
-   await Promise.resolve();
-   progressStage("Запрашиваем данные у Яндекса","Получаем дома, комнаты, устройства, группы и сценарии. Это может занять некоторое время.");
+   startLoadTicker();
+   logSafe("load_start","build=20261022-17; attempts_max=2");
    let resp,raw;
    for(let attempt=1;attempt<=2;attempt++){
      const controller=new AbortController();
      const timeout=setTimeout(()=>controller.abort(),35000);
+     const started=performance.now();
+     let phase="fetch";
      try{
-       progressStage("Получаем устройства",attempt===1?"Запрашиваем данные умного дома…":"Повторяем получение ответа после обрыва соединения…",attempt===1?35:45);
+       logSafe("request_start","attempt="+attempt+" max_ms=35000");
+       progressStage("Получаем устройства",attempt===1?"Запрашиваем данные умного дома…":"Повторяем получение после обрыва передачи…");
        resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
          headers:{"Content-Type":"application/json"},cache:"no-store",referrerPolicy:"no-referrer",
          body:JSON.stringify({access_token:token}),signal:controller.signal});
-       progressStage("Читаем ответ сервера","Ответ HTTP "+resp.status+". Получаем содержимое…",65);
-       raw=await resp.text();
+       logSafe("headers_received","attempt="+attempt+" status="+resp.status+" latency_ms="+Math.round(performance.now()-started));
+       phase="body";
+       progressStage("Читаем ответ сервера","HTTP "+resp.status+". Начинаем чтение содержимого…");
+       raw=await readBodyWithProgress(resp,controller,attempt);
        break;
      }catch(error){
+       const reason=controller.signal.aborted?"timeout":error?.message==="body_size_limit"?"size_limit":error?.name==="TypeError"?"network_typeerror":error?.name==="AbortError"?"aborted":"stream_error";
+       logSafe("attempt_failed","attempt="+attempt+" phase="+phase+" reason="+reason+" elapsed_ms="+Math.round(performance.now()-started));
+       if(reason==="size_limit")throw Error("Ответ превышает допустимый размер.");
        if(attempt===2){
-         throw Error(controller.signal.aborted
-           ?"Сервер не передал полный ответ за 35 секунд. Повторная попытка не помогла."
-           :"Ответ HTTP получен, но браузер не смог прочитать его полностью даже со второй попытки. Возможен обрыв потока или ошибка браузерного сетевого слоя.");
+         throw Error(reason==="timeout"
+           ?"Ответ не был полностью получен за 35 секунд. Две попытки завершились без результата. Скопируйте безопасный журнал диагностики."
+           :"Ошибка чтения данных сервера. Две попытки завершились без результата. Скопируйте безопасный журнал диагностики.");
        }
+       logSafe("retry_scheduled","after_failed_attempt="+attempt);
      }finally{clearTimeout(timeout);}
    }
-   progressStage("Проверяем ответ","Данные полностью получены; проверяем JSON.",70);
+   logSafe("parse_start","characters="+raw.length);
+   progressStage("Проверяем ответ","Данные полностью получены; проверяем JSON.",90);
    if(raw.length>3_000_000)throw Error("Ответ слишком большой.");
-   let parsed;try{parsed=JSON.parse(raw);}catch{throw Error("Сервер вернул некорректный JSON.");}
-   if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
+   let parsed;try{parsed=JSON.parse(raw);}catch{logSafe("json_parse_failed","invalid_json");throw Error("Сервер вернул некорректный JSON.");}
+   if(!resp.ok){logSafe("http_failure","status="+resp.status);throw Error(asHumanError(parsed?.error,resp.status));}
    progressStage("Готовим список","Сортируем дома, комнаты, устройства и сценарии.",85);
    loadRaw(JSON.stringify(parsed));
+   logSafe("load_success","households="+parsed.households.length+" rooms="+parsed.rooms.length+" devices="+parsed.devices.length+" groups="+parsed.groups.length+" scenarios="+parsed.scenarios.length);
    status("Дом загружен: "+parsed.households.length+" домов, "+parsed.rooms.length+" комнат, "+parsed.devices.length+" устройств, "+parsed.groups.length+" групп, "+parsed.scenarios.length+" сценариев.");
    tokenCheck("Токен подтверждён API Яндекс Умного дома. Устройства и сценарии получены.",true);
    progressStage("Готово!","Устройства уже отображены. Данные профиля проверяются отдельно.",100);
@@ -89,9 +153,10 @@ async function loadFromYandex(){
    setTimeout(endProgress,2000);
  }catch(e){
    endProgress();
-   tokenCheck("Токен не подтверждён. Проверьте аккаунт, права iot:view или получите новый токен через «Выбрать другой аккаунт».");
+   logSafe("load_failed","completed=false");
+   tokenCheck("Загрузка не завершилась. Это не доказывает, что токен недействителен.");
    status(e?.name==="AbortError"?"Время ожидания истекло. Повторите запрос.":String(e?.message||e),true);
- }finally{busy=false;$("loadDevices").disabled=false;}
+ }finally{stopLoadTicker();busy=false;$("loadDevices").disabled=false;}
 }
 async function readYandexIdentity(token){
  const idBox=$("accountInfo"), name=$("accountName"), login=$("accountLogin"), avatar=$("accountAvatar");
@@ -210,6 +275,12 @@ function initOAuth(){
  input.addEventListener("pointerdown",unlockInput);
  input.addEventListener("focus",unlockInput);
  $("loadDevices").addEventListener("click",loadFromYandex);
+ $("copyNetworkDiagnostics")?.addEventListener("click",async()=>{
+   try{await navigator.clipboard.writeText("Mapkepp Tools — безопасная диагностика загрузки\n"+diagLines.join("\n"));status("Журнал без токена и данных устройств скопирован.");}
+   catch{status("Копирование недоступно. Выделите текст в блоке «Диагностика загрузки».",true);}
+ });
+ $("clearNetworkDiagnostics")?.addEventListener("click",()=>{diagLines.length=0;$("networkDiagnosticLog").textContent="Журнал очищен.";});
+
  $("clearOAuth").addEventListener("click",()=>{
    input.value="";input.type="password";input.readOnly=true;
    $("proxyConsent").checked=false;endProgress();clearAccountView();
