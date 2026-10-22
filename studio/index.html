@@ -106,6 +106,14 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div id="qrPanel" hidden><div id="qrTarget" style="padding:14px;background:white;display:inline-block;border-radius:12px;max-width:100%"></div><p class="hint">Отсканируйте QR-код камерой iPhone и откройте ссылку в Safari. Дальше нажмите «Подписать и скачать».</p></div>
 <p id="shareStatus" class="hint" role="status"></p>
 </section>
+<section id="historyPanel" class="notice" style="margin-top:16px">
+<h3>🗂️ Мои сохранённые команды</h3>
+<p class="hint">Сохраняйте только настройки команды в этом браузере — без токенов, аккаунта и облачной регистрации. История находится исключительно на вашем устройстве. На другом устройстве её можно открыть по ссылке или перенести файлом JSON.</p>
+<div class="flex"><button type="button" id="saveHistory">Сохранить текущую команду</button><button type="button" id="exportHistory">Экспорт истории</button><button type="button" id="deleteHistory">Очистить историю</button></div>
+<input type="file" id="importHistory" accept=".json,application/json" aria-label="Импорт истории сохранённых команд">
+<div id="historyList" style="max-height:290px;overflow:auto"></div>
+<p id="historyStatus" class="hint" role="status"></p>
+</section>
 <details id="dangerShare" class="notice warning" style="margin-top:12px">
 <summary>⚠️ Особый режим: команда со встроенным токеном</summary>
 <p><strong>Опасно!</strong> Любой обладатель такого файла сможет управлять вашими устройствами Яндекса. Файл содержит ваш личный токен в читаемом виде; при подписи он будет передан внешнему сервису Shortcuty. Это не подходит для публичной публикации.</p>
@@ -125,4 +133,4 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-13" defer></script><script src="./share.js?v=20261022-13" defer></script><script src="./yandex-widget.js?v=20261022-13" defer></script></body></html>
+</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-13" defer></script><script src="./share.js?v=20261022-13" defer></script><script src="./yandex-widget.js?v=20261022-13" defer></script><script src="./history.js?v=20261022-14" defer></script></body></html>
