@@ -8,6 +8,7 @@ on:
       - 'assets/**'
       - 'studio/**'
       - 'ios/**'
+      - 'oauth/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -60,6 +61,7 @@ jobs:
           if [[ -d assets ]]; then cp -R assets _site/assets; fi
           if [[ -d studio ]]; then cp -R studio _site/studio; fi
           if [[ -d ios ]]; then cp -R ios _site/ios; fi
+          if [[ -d oauth ]]; then cp -R oauth _site/oauth; fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
