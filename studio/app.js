@@ -69,6 +69,8 @@ async function loadFromYandex(){
    if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
    progressStage("Готовим список","Сортируем дома, комнаты, устройства и сценарии.",85);
    loadRaw(JSON.stringify(parsed));
+   progressStage("Проверяем аккаунт Яндекса","Получаем имя и аватар, если это разрешено Яндексом.",90);
+   await readYandexIdentity(token);
    progressStage("Готово!","Ваши объекты отображены ниже.",100);
    $("pick").scrollIntoView({behavior:"smooth",block:"start"});
    setTimeout(endProgress,2000);
@@ -76,6 +78,36 @@ async function loadFromYandex(){
    endProgress();
    status(e?.name==="AbortError"?"Время ожидания истекло. Повторите запрос.":String(e?.message||e),true);
  }finally{busy=false;$("loadDevices").disabled=false;}
+}
+async function readYandexIdentity(token){
+ const idBox=$("accountInfo"), name=$("accountName"), login=$("accountLogin"), avatar=$("accountAvatar");
+ idBox.hidden=false;
+ name.textContent="Аккаунт Яндекса";
+ login.textContent="Проверяем логин…";
+ avatar.hidden=true;avatar.removeAttribute("src");
+ try{
+  const endpoint="https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/yandex-profile";
+  const controller=new AbortController();
+  const time=setTimeout(()=>controller.abort(),11000);
+  let r;
+  try{r=await fetch(endpoint,{method:"POST",mode:"cors",credentials:"omit",cache:"no-store",referrerPolicy:"no-referrer",
+    headers:{"Content-Type":"application/json"},body:JSON.stringify({access_token:token}),signal:controller.signal});
+  }finally{clearTimeout(time);}
+  if($("oauthToken").value.trim().replace(/^Bearer\s+/i,"")!==token)return;
+  if(!r.ok)throw Error("profile access unavailable");
+  const info=await r.json();
+  if(typeof info.login!=="string"||!info.login)throw Error("profile login missing");
+  const display=[info.display_name,info.real_name,info.first_name,info.login].find(x=>typeof x==="string"&&x.trim());
+  name.textContent=display||info.login;
+  login.textContent="Яндекс ID: "+info.login;
+  if(!info.is_avatar_empty && typeof info.avatar_id==="string"&&/^[a-zA-Z0-9_-]{1,100}$/.test(info.avatar_id)){
+    avatar.src="https://avatars.yandex.net/get-yapic/"+encodeURIComponent(info.avatar_id)+"/islands-75";
+    avatar.hidden=false;
+  }
+ }catch{
+  name.textContent="Яндекс ID подключён";
+  login.textContent="Имя и фото недоступны. В настройках OAuth-приложения могут потребоваться права login:info и login:avatar.";
+ }
 }
 function initOAuth(){
  setBackendNotice();
@@ -94,6 +126,7 @@ function initOAuth(){
  $("loadDevices").addEventListener("click",loadFromYandex);
  $("clearOAuth").addEventListener("click",()=>{
     $("oauthToken").value="";$("proxyConsent").checked=false;endProgress();
+    $("accountInfo").hidden=true;$("accountAvatar").hidden=true;$("accountAvatar").removeAttribute("src");
     try{sessionStorage.removeItem(TEMP_TOKEN_KEY);sessionStorage.removeItem(STATE_KEY);sessionStorage.removeItem(CONSENT_KEY);}catch{}
     status("Токен удалён из поля и временной памяти вкладки.");
  });
@@ -384,7 +417,7 @@ window.MapkeppStudio = Object.freeze({
    status("Открыта подготовленная команда. Проверьте параметры и нажмите «Подписать и скачать». Для управления нужен токен аккаунта, имеющего доступ к выбранному устройству.");
  },
  signWithEmbeddedToken(){
-   const token=$("oauthToken").value.trim().replace(/^Bearer\\s+/i,"");
+   const token=$("oauthToken").value.trim().replace(/^Bearer\s+/i,"");
    if(!/^[a-zA-Z0-9_.~+\\/=-]{12,4096}$/.test(token))throw Error("Вставьте действительный токен в поле Яндекса.");
    return file(token);
  },
