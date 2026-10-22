@@ -1,6 +1,8 @@
 # Mapkepp Tools — Smart Home Shortcut Studio
 
-Public demo: https://mapkepp.github.io/tools/
+**Primary repository:** https://github.com/mapkepp/tools/  
+**Planned Pages URL (currently not live):** https://mapkepp.github.io/tools/  
+**Temporary working demo:** https://mapkepp.github.io/loto-generator/public-tools-hub/
 
 **Status: MVP (22 October 2026).** Free, independent and unofficial community project.
 
@@ -26,14 +28,16 @@ All functionality is free and identical for everyone. The support button is a **
 
 Target: https://mapkepp.github.io/tools/
 
-The repository includes a GitHub Actions Pages deployment workflow. GitHub Pages settings must be enabled; check https://github.com/mapkepp/tools/settings/pages . Site is publicly usable only when HTTP 200 is confirmed.
+The repository includes `.github/workflows/pages.yml`, which runs on pushes to `main` and on manual dispatch. Its first run failed at `actions/configure-pages` because GitHub Pages has **not been enabled**. GitHub's automatic `GITHUB_TOKEN` cannot perform initial Pages site enablement; the connected GitHub app cannot modify repository Pages settings.
+
+**One-time repository setting:** open https://github.com/mapkepp/tools/settings/pages → Build and deployment → **Source: GitHub Actions**. After this is enabled, rerun the failed workflow at https://github.com/mapkepp/tools/actions/workflows/pages.yml (or push another commit). No paid hosting is required.
 
 No computer or paid hosting is required.
 
 ## Current verification
-- Public HTTPS page: PASS (HTTP 200).
+- Primary Pages HTTPS site: **FAIL / HTTP 404** until initial Pages enablement. Temporary old demo URL: PASS.
 - Six request/configuration variants: PASS (browser regression checks).
 - XML plist generation, true/false, integer number, ID and OAuth-token absence: PASS.
 - Apple AEA1 signer integration tested on scenario and VPN/non-VPN variants: PASS using **synthetic** IDs only.
 - Real iPhone iOS 26.6.2 import, VPN reconnection, device control, Safari cross-origin form downloads: **NOT_TESTED**.
-- Repository: **CREATED**; GitHub Pages and donation link require separate verification/configuration.
+- Primary `mapkepp/tools` repository: **PASS**; deployment workflow: **PASS created / FAIL first run due Pages not enabled**; donation link not configured.
