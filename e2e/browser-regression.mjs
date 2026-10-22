@@ -66,6 +66,7 @@ try{
    if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers});
    return route.fulfill({status:403,headers,body:'{"error":"profile_not_authorized"}'});
  });
+ await page.locator("#oauthToken").click(); // User interaction unlocks the autofill-safe field.
  await page.locator("#oauthToken").fill("synthetic-fake-oauth-token-123456");
  await page.locator("#proxyConsent").check();
  await page.locator("#loadDevices").click();
