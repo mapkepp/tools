@@ -32,9 +32,16 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p class="muted">Не нужно искать ID устройств вручную. Авторизация происходит на стороне Яндекса; для чтения списка нужен одноразовый запрос через наш сервер.</p>
 <div class="notice" style="margin:14px 0">
 <strong>Способ 1. Войти через Яндекс ID</strong>
+<div id="yandexOfficialAuth" class="notice" style="margin:12px 0">
+  <p class="hint">Официальная кнопка Яндекс ID может показать имя и аватар аккаунта, под которым вы уже вошли в Яндекс. Она загрузится только после нажатия на кнопку ниже.</p>
+  <button id="showYandexWidget" type="button">Яндекс ID — показать кнопку входа</button>
+  <div id="yandexButtonContainer" style="margin-top:12px;min-height:0"></div>
+  <p id="yandexWidgetStatus" class="hint" role="status" aria-live="polite"></p>
+  <p class="hint">Если кнопка Яндекса не появляется, пользуйтесь обычным входом или «Выбрать другой аккаунт» ниже.</p>
+</div>
 <p class="hint">Перейдите на официальный сайт Яндекса, разрешите доступ и вернитесь сюда. Токен будет автоматически перенесён в поле ниже <strong>только в этой вкладке</strong>. После вашего согласия проверим токен на реальном API и загрузим устройства именно выбранного аккаунта.</p>
 <p class="hint">Яндекс может запомнить предыдущую учётную запись. Нажмите «Выбрать другой аккаунт», чтобы Яндекс снова показал выбор аккаунта и подтверждение доступа.</p>
-<div class="flex"><a class="btn primary" href="https://oauth.yandex.ru/authorize?response_type=token&amp;client_id=a0f04364eb374e6a9297ca708c959218&amp;scope=iot%3Aview%20iot%3Acontrol&amp;redirect_uri=https%3A%2F%2Fmapkepp.github.io%2Ftools%2Foauth%2Fcallback.html" id="yandexAuth">🔐 Войти через Яндекс</a>
+<div class="flex"><a class="btn primary" href="https://oauth.yandex.ru/authorize?response_type=token&amp;client_id=e5942ee8886149dfadc84fa3bc89049a&amp;scope=iot%3Aview%20iot%3Acontrol&amp;redirect_uri=https%3A%2F%2Fmapkepp.github.io%2Ftools%2Foauth%2Fcallback.html" id="yandexAuth">🔐 Войти через Яндекс</a>
 <button id="switchYandexAccount" type="button">🔁 Выбрать другой аккаунт</button></div>
 <label for="loginHint">Какой аккаунт использовать? (необязательно)</label>
 <input id="loginHint" type="text" maxlength="120" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Логин Яндекса или адрес почты">
@@ -118,4 +125,4 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-11" defer></script><script src="./share.js?v=20261022-11" defer></script></body></html>
+</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-12" defer></script><script src="./share.js?v=20261022-12" defer></script><script src="./yandex-widget.js?v=20261022-12" defer></script></body></html>
