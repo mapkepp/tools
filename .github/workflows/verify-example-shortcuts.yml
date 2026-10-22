@@ -1,0 +1,41 @@
+name: Check published signed Shortcut examples
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish Mapkepp Tools to GitHub Pages"]
+    types: [completed]
+  push:
+    paths: ['.github/workflows/verify-example-shortcuts.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  verify-examples:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Verify homepage links and exact released Apple signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="https://mapkepp.github.io/tools"
+          mkdir -p /tmp/mapkepp-public
+          curl --fail --silent --show-error --location --retry 5 --retry-delay 3 --max-time 30 "${root}/" -o /tmp/mapkepp-public/index.html
+          grep -q 'id="verifiedExamples"' /tmp/mapkepp-public/index.html
+          grep -q 'href="./examples/Kitchen_Light_ON.shortcut"' /tmp/mapkepp-public/index.html
+          grep -q 'href="./examples/Kitchen_Light_OFF.shortcut"' /tmp/mapkepp-public/index.html
+          curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_ON.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_ON.shortcut
+          curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_OFF.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_OFF.shortcut
+          (cd /tmp/mapkepp-public && echo 'c91fe62140d74e70983d34381cf8b79348a1852b3fa585aaf0c213ed25b65355  Kitchen_Light_ON.shortcut' | sha256sum -c -)
+          (cd /tmp/mapkepp-public && echo '13988b58a64d296b45bc84fa4a634fdf20ae26c96a030eee525ce22462d0a5f1  Kitchen_Light_OFF.shortcut' | sha256sum -c -)
+          python3 - <<'PY'
+          from pathlib import Path
+          for action in ("ON","OFF"):
+              f=Path("/tmp/mapkepp-public/Kitchen_Light_"+action+".shortcut")
+              assert f.read_bytes()[:4]==b"AEA1"
+              print("PASS: "+action+" accessible, Apple AEA1 signed, SHA-256 match")
+          PY
+          echo "PASS: homepage links to authentic historic signed samples. No real Yandex devices or tokens tested."
