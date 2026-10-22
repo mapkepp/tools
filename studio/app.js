@@ -1,14 +1,16 @@
 "use strict";
 (() => {
 const $=id=>document.getElementById(id);
-const limit=1200000;
+const limit=2800000;
 let data=null, selected=null, example=false;
 const API="https://api.iot.yandex.net/v1.0";
 const SIGN="https://sign.shortcuty.app/api/v1/sign";
 const backendUrl=String(window.MAPKEPP_HOME_API_URL||"").trim();
-const TEMP_TOKEN_KEY="mapkepp.yandex.oauth.tmp";
-const STATE_KEY="mapkepp.yandex.oauth.state";
-const CONSENT_KEY="mapkepp.yandex.oauth.consent";
+const OAUTH_CLIENT_ID="e5942ee8886149dfadc84fa3bc89049a";
+const TEMP_TOKEN_KEY="mapkepp.yandex.oauth.tmp."+OAUTH_CLIENT_ID;
+const STATE_KEY="mapkepp.yandex.oauth.state."+OAUTH_CLIENT_ID;
+const CONSENT_KEY="mapkepp.yandex.oauth.consent."+OAUTH_CLIENT_ID;
+const TOKEN_TIME_KEY="mapkepp.yandex.oauth.issued."+OAUTH_CLIENT_ID;
 let busy=false;
 function proxyIsConfigured(){
   try{
@@ -47,14 +49,14 @@ async function loadFromYandex(){
  if(!token){status("Сначала войдите через Яндекс или вставьте полученный токен.",true);return;}
  if(!/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(token)){status("Токен содержит недопустимые символы. Скопируйте его из Яндекса без слова Bearer.",true);return;}
  if(!$("proxyConsent").checked){status("Подтвердите передачу токена нашему защищённому обработчику для одного запроса к Яндексу.",true);return;}
- if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик ещё не подключён. Токен не отправлялся. Пока можно импортировать список с iPhone.",true);return;}
+ if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик недоступен. Токен не отправлялся. Можно импортировать ранее сохранённый JSON.",true);return;}
  busy=true;$("loadDevices").disabled=true;
  try{
    progressStage("Проверка подключения","Подготовка защищённого запроса…",15);
    await Promise.resolve();
    progressStage("Запрашиваем данные у Яндекса","Получаем дома, комнаты, устройства, группы и сценарии. Это может занять некоторое время.");
    const controller=new AbortController();
-   const timeout=setTimeout(()=>controller.abort(),20000);
+   const timeout=setTimeout(()=>controller.abort(),35000);
    let resp;
    try{
      resp=await fetch(backendUrl,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
@@ -69,10 +71,10 @@ async function loadFromYandex(){
    if(!resp.ok)throw Error(asHumanError(parsed?.error,resp.status));
    progressStage("Готовим список","Сортируем дома, комнаты, устройства и сценарии.",85);
    loadRaw(JSON.stringify(parsed));
-   tokenCheck("Токен подтверждён API Яндекс Умного дома: устройства и сценарии успешно загружены.",true);
-   progressStage("Проверяем аккаунт Яндекса","Получаем имя и аватар, если это разрешено Яндексом.",90);
-   await readYandexIdentity(token);
-   progressStage("Готово!","Ваши объекты отображены ниже.",100);
+   status("Дом загружен: "+parsed.households.length+" домов, "+parsed.rooms.length+" комнат, "+parsed.devices.length+" устройств, "+parsed.groups.length+" групп, "+parsed.scenarios.length+" сценариев.");
+   tokenCheck("Токен подтверждён API Яндекс Умного дома. Устройства и сценарии получены.",true);
+   progressStage("Готово!","Устройства уже отображены. Данные профиля проверяются отдельно.",100);
+   void readYandexIdentity(token).catch(()=>{});
    $("pick").scrollIntoView({behavior:"smooth",block:"start"});
    setTimeout(endProgress,2000);
  }catch(e){
@@ -135,6 +137,7 @@ function beginYandexAuth(){
    sessionStorage.setItem(STATE_KEY,state);
    sessionStorage.setItem(CONSENT_KEY,$("proxyConsent").checked?"yes":"no");
    sessionStorage.removeItem(TEMP_TOKEN_KEY);
+   sessionStorage.removeItem(TOKEN_TIME_KEY);
    const cfg=new URLSearchParams(location.hash.slice(1)).get("config");
    if(cfg)sessionStorage.setItem("mapkepp.share.pending",cfg);
  }catch{
@@ -165,39 +168,52 @@ function beginYandexAuth(){
 }
 function initOAuth(){
  setBackendNotice();
- let tempToken="";
+ const input=$("oauthToken");
+ input.value="";                 // Never trust browser password-manager autofill.
+ input.readOnly=true;            // Most autofill managers skip readonly fields.
+ let tempToken="",issuedAt=0;
  try{
    tempToken=sessionStorage.getItem(TEMP_TOKEN_KEY)||"";
+   issuedAt=Number(sessionStorage.getItem(TOKEN_TIME_KEY)||0);
    sessionStorage.removeItem(TEMP_TOKEN_KEY);
+   sessionStorage.removeItem(TOKEN_TIME_KEY);
+   // Invalidate all tokens and state created before the new OAuth application.
+   for(const key of ["mapkepp.yandex.oauth.tmp","mapkepp.yandex.oauth.state","mapkepp.yandex.oauth.consent"]){
+     sessionStorage.removeItem(key);
+   }
    if(sessionStorage.getItem(CONSENT_KEY)==="yes")$("proxyConsent").checked=true;
    sessionStorage.removeItem(CONSENT_KEY);
  }catch{}
- if(tempToken){
-   if(/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
-     $("oauthToken").value=tempToken;
-     tokenCheck("Токен получен от Яндекса, но ещё не проверен по API. Нажмите «Загрузить мои устройства».");
-     status("Токен получен после входа. Проверяем его разрешения и принадлежность аккаунту.");
-     if(proxyIsConfigured()&&$("proxyConsent").checked&&!sessionStorage.getItem("mapkepp.share.pending"))queueMicrotask(loadFromYandex);
-   }else{
-     tokenCheck("Яндекс вернул значение, не похожее на OAuth-токен. Получите разрешение заново через «Выбрать другой аккаунт».");
-     status("Получен некорректный формат токена. Устаревшее значение не используется.",true);
-   }
+ const fresh=issuedAt>0 && Date.now()-issuedAt>=0 && Date.now()-issuedAt<300000;
+ if(tempToken && fresh && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
+   input.value=tempToken;
+   tokenCheck("Токен нового Яндекс-приложения получен, но ещё не проверен API.",false);
+   status("Авторизация возвращена. Проверяем доступ к Умному дому.");
+   if(proxyIsConfigured()&&$("proxyConsent").checked&&!sessionStorage.getItem("mapkepp.share.pending"))queueMicrotask(loadFromYandex);
+ }else if(tempToken){
+   tokenCheck("Устаревший или неподтверждённый токен отклонён. Авторизуйтесь заново.",false);
+   status("Устаревший токен удалён, старое OAuth-приложение больше не используется.",true);
  }
+ function unlockInput(){
+    input.readOnly=false;
+ }
+ input.addEventListener("pointerdown",unlockInput);
+ input.addEventListener("focus",unlockInput);
  $("loadDevices").addEventListener("click",loadFromYandex);
  $("clearOAuth").addEventListener("click",()=>{
-   $("oauthToken").value="";$("oauthToken").type="password";
+   input.value="";input.type="password";input.readOnly=true;
    $("proxyConsent").checked=false;endProgress();clearAccountView();
    try{
-     sessionStorage.removeItem(TEMP_TOKEN_KEY);
-     sessionStorage.removeItem(STATE_KEY);
-     sessionStorage.removeItem(CONSENT_KEY);
+     for(const key of [TEMP_TOKEN_KEY,STATE_KEY,CONSENT_KEY,TOKEN_TIME_KEY,
+       "mapkepp.yandex.oauth.tmp","mapkepp.yandex.oauth.state","mapkepp.yandex.oauth.consent"])
+       sessionStorage.removeItem(key);
    }catch{}
-   tokenCheck("Токен очищен. Для входа под другим аккаунтом нажмите «Выбрать другой аккаунт».");
-   status("Личный токен удалён из формы и временного хранилища.");
+   tokenCheck("Личный токен очищен. Чтобы подключить аккаунт, войдите через Яндекс.",false);
+   status("Токен удалён из поля и временной памяти этого сайта.");
  });
- $("oauthToken").addEventListener("input",()=>{
+ input.addEventListener("input",()=>{
    clearAccountView();
-   tokenCheck("Токен изменён вручную. Его действительность и аккаунт ещё не проверены.");
+   tokenCheck("Токен изменён. Его действительность и аккаунт ещё не проверены.",false);
  });
  $("yandexAuth").addEventListener("click",e=>{e.preventDefault();beginYandexAuth();});
  $("switchYandexAccount").addEventListener("click",beginYandexAuth);
@@ -233,7 +249,7 @@ function loadRaw(raw){
  }
  data=o;selected=null;example=false;render();
  const count=o.devices.length+o.groups.length+o.scenarios.length;
- status("Данные загружены локально: "+o.households.length+" домов, "+o.rooms.length+" комнат, "+count+" объектов. Токен на сайт не передавался.");
+ status("Список готов: "+o.households.length+" домов, "+o.rooms.length+" комнат, "+count+" объектов.");
 }
 function pick(kind,obj){
  selected={kind,obj};
