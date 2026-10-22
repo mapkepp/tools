@@ -52,14 +52,20 @@ try{
  // Mock only the home/account endpoints. No personal data or access token is sent
  // to the actual provider during the following step.
  await page.route("**/functions/v1/yandex-home",async route=>{
-   const headers={"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-methods":"POST, OPTIONS","access-control-allow-headers":"content-type","content-type":"application/json"};
-   if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers});
-   return route.fulfill({status:200,headers,body:JSON.stringify({
+   const mock={
      status:"ok",households:[{id:"h",name:"Тестовый дом"}],
      rooms:[{id:"k",name:"Кухня",household_id:"h",devices:["light"]}],
      devices:[{id:"light",name:"Свет",household_id:"h",room:"k",type:"devices.types.light",capabilities:[{type:"devices.capabilities.on_off",parameters:{}}]}],
      groups:[],scenarios:[{id:"scene",name:"Сценарий",is_active:true}]
-   })});
+   };
+   const body=JSON.stringify(mock);
+   const headers={"access-control-allow-origin":"https://mapkepp.github.io",
+     "access-control-expose-headers":"X-Mapkepp-Body-Bytes, X-Mapkepp-Upstream-Ms",
+     "access-control-allow-methods":"POST, OPTIONS","access-control-allow-headers":"content-type",
+     "content-type":"application/json","x-mapkepp-body-bytes":String(new TextEncoder().encode(body).byteLength),
+     "x-mapkepp-upstream-ms":"25"};
+   if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers});
+   return route.fulfill({status:200,headers,body});
  });
  await page.route("**/functions/v1/yandex-profile",async route=>{
    const headers={"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-methods":"POST, OPTIONS","access-control-allow-headers":"content-type","content-type":"application/json"};
@@ -77,6 +83,8 @@ try{
  const diagnostics=await page.locator("#networkDiagnosticLog").textContent();
  assert.match(diagnostics,/response_headers/);
  assert.match(diagnostics,/body_complete/);
+ assert.match(diagnostics,/decoded_expected=[1-9]/);
+ assert.match(diagnostics,/chunk.*wait_ms=/);
  assert.match(diagnostics,/load_success/);
  assert.ok(!diagnostics.includes("synthetic-fake-oauth-token-123456"),"Diagnostic log must not contain the token");
  assert.equal(await page.locator(".load-activity .load-runner").count(),1);
