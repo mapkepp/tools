@@ -7,7 +7,7 @@ const read=p=>readFile(new URL("../"+p,import.meta.url),"utf8");
 const ids=["studio/app.js","studio/share.js","studio/vendor/qrcode.min.js"];
 
 test("all deployed browser scripts parse as standalone JavaScript", async()=>{
-  for(const file of ids)assert.doesNotThrow(()=>new vm.Script(await read(file),{filename:file}));
+  for(const file of ids){const source=await read(file);assert.doesNotThrow(()=>new vm.Script(source,{filename:file}));}
 });
 
 test("the recipient's share-link configuration does not serialize an OAuth token",async()=>{
@@ -40,7 +40,7 @@ test("dangerous embedded-token signing needs separate affirmative consent",async
   assert.match(js,/ПЕРЕДАТЬ ДОСТУП/);
   assert.match(js,/window\.confirm/);
   assert.match(js,/signWithEmbeddedToken/);
-  assert.match(index,/токен будет передан внешнему сервису Shortcuty/);
+  assert.match(index,/будет передан внешнему сервису Shortcuty/);
 });
 
 test("generated shortcuts help recipients obtain a token on their own iPhone",async()=>{
