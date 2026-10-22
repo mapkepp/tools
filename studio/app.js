@@ -222,9 +222,9 @@ async function downloadHomeInSegments(token){
 async function loadFromYandex(){
  if(busy)return;
  const input=$("oauthToken");
- const token=input.value.trim().replace(/^Bearer\\s+/i,"");
+ const token=input.value.trim().replace(/^Bearer\s+/i,"");
  if(!token){status("Сначала войдите через Яндекс или вставьте полученный токен.",true);return;}
- if(!/^[A-Za-z0-9_.~+\\/=-]{12,4096}$/.test(token)){status("Токен содержит недопустимые символы.",true);return;}
+ if(!/^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(token)){status("Токен содержит недопустимые символы.",true);return;}
  if(!$("proxyConsent").checked){status("Подтвердите согласие на загрузку устройств и обезличенную диагностику.",true);return;}
  if(!proxyIsConfigured()){setBackendNotice();status("Серверный обработчик не настроен.",true);return;}
  busy=true;$("loadDevices").disabled=true;
