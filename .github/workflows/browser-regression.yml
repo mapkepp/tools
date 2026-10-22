@@ -1,0 +1,27 @@
+name: Cloud browser regression without real Yandex credentials
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/browser-regression.yml'
+      - 'e2e/browser-regression.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright test browser
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install chromium
+      - name: Check published UI with fabricated data only
+        run: node e2e/browser-regression.mjs
