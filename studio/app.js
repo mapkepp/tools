@@ -29,10 +29,10 @@ function updateElapsed(){
 function startLoadTicker(){loadT0=performance.now();if(loadTicker)clearInterval(loadTicker);updateElapsed();loadTicker=setInterval(updateElapsed,250);}
 function stopLoadTicker(){if(loadTicker)clearInterval(loadTicker);loadTicker=null;}
 async function readBodyWithProgress(response,controller,attempt){
-  const expected=Number(response.headers.get("content-length")||0);
-  const size=Number.isFinite(expected)&&expected>0?expected:0;
-  const bytesFromServer=response.headers.get("x-mapkepp-body-bytes");
-  logSafe("response_headers","attempt="+attempt+" status="+response.status+" expected_bytes="+size+" advertised_bytes="+(Number(bytesFromServer)||0)+" upstream_ms="+(Number(response.headers.get("x-mapkepp-upstream-ms"))||0)+" type="+(response.headers.get("content-type")?.includes("json")?"json":"other"));
+  const wireLength=Number(response.headers.get("content-length")||0);
+  const declared=Number(response.headers.get("x-mapkepp-body-bytes")||0);
+  const size=Number.isFinite(declared)&&declared>0?declared:0;
+  logSafe("response_headers","attempt="+attempt+" status="+response.status+" wire_length="+wireLength+" decoded_expected="+size+" upstream_ms="+(Number(response.headers.get("x-mapkepp-upstream-ms"))||0)+" type="+(response.headers.get("content-type")?.includes("json")?"json":"other"));
   if(!response.body||typeof response.body.getReader!=="function"){
     logSafe("reader_fallback","browser stream reader unavailable");
     const text=await response.text();
@@ -40,22 +40,23 @@ async function readBodyWithProgress(response,controller,attempt){
     return text;
   }
   const reader=response.body.getReader(),chunks=[];
-  let received=0,lastMark=0,first=true;
+  let received=0,first=true,previousChunkAt=performance.now(),chunkIndex=0;
   try{
     while(true){
       const {done,value}=await reader.read();
       if(done)break;
       if(!value)continue;
       received+=value.byteLength;
-      if(first){logSafe("first_chunk","attempt="+attempt+" bytes="+value.byteLength);first=false;}
+      const now=performance.now(),gap=Math.round(now-previousChunkAt);previousChunkAt=now;chunkIndex++;
+      logSafe("chunk","attempt="+attempt+" n="+chunkIndex+" bytes="+value.byteLength+" total="+received+" wait_ms="+gap);
+      if(first){first=false;}
       if(received>3000000)throw Error("body_size_limit");
       chunks.push(value);
-      if(received-lastMark>=131072){logSafe("transfer","attempt="+attempt+" bytes="+received);lastMark=received;}
       if(size>0){
         const fraction=Math.min(1,received/size);
-        progressStage("Загружаем данные","Получено "+received+" байт из заявленных "+size+" (по сетевым заголовкам).",Math.min(89,65+Math.round(fraction*23)));
+        progressStage("Загружаем данные","Получено "+received+" из "+size+" байт распакованного JSON ("+Math.round(fraction*100)+"%).",Math.min(89,65+Math.round(fraction*23)));
       }else{
-        progressStage("Загружаем данные","Получено "+received+" байт; полный размер сервер не указал.");
+        progressStage("Загружаем данные","Получено "+received+" байт; размер распакованного ответа сервер не указал.");
       }
     }
     const joined=new Uint8Array(received);let offset=0;
