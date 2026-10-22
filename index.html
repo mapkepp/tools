@@ -1,166 +1,149 @@
-<!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mapkepp Tools — конструктор команд умного дома</title>
-<meta name="description" content="Бесплатный конструктор Apple Команд для Яндекс Умного дома. Без регистрации, без передачи OAuth-токенов и платных ограничений.">
+<!doctype html><html lang="ru"><head><base href="./studio/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101a30"><link rel="icon" type="image/png" sizes="64x64" href="../assets/siri-smart-home-icon.png"><link rel="apple-touch-icon" href="../assets/siri-smart-home-icon.png"><title>Выбрать устройство — Mapkepp Tools</title>
+<meta name="description" content="Конструктор Apple Команд для устройств, комнат, домов, групп и сценариев Яндекс Умного дома. Бесплатно.">
 <style>
-:root{color-scheme:dark;--bg:#0c1220;--panel:#161e30;--panel2:#1a2841;--border:#34415c;--text:#f4f7fd;--muted:#b3c0d6;--accent:#80edbd;--violet:#c2abff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 0%,#253557 0%,transparent 48%),var(--bg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--text)}
-a{color:#b4d4ff}a:hover{text-decoration:none}.shell{max-width:1100px;margin:auto;padding:0 20px}
-header{display:flex;justify-content:space-between;align-items:center;padding:22px 0;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--border)}.brand{font-size:1.1rem;font-weight:800;color:var(--text);text-decoration:none}.brand span{color:var(--accent)}
-nav{display:flex;gap:16px;font-size:.9rem}nav a{text-decoration:none;color:var(--muted)}
-.hero{padding:46px 0 26px}.eyebrow{letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-size:.76rem;font-weight:800}.hero h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.15;max-width:780px;letter-spacing:-.04em;margin:12px 0}.hero p{max-width:710px;color:var(--muted);font-size:1.08rem}
-.pills{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}.pill{border:1px solid var(--border);background:#202b42;border-radius:30px;padding:6px 13px;font-size:.82rem;color:#dbe6f7}
-.layout{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(300px,.84fr);gap:22px}.panel{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 20px 60px #0002}
-h2{font-size:1.4rem;line-height:1.3;margin:0 0 8px}h3{font-size:1.05rem}.sub{color:var(--muted);margin:0 0 24px;font-size:.92rem}
-label.field{display:block;font-size:.91rem;font-weight:670;margin-bottom:17px}.field small{display:block;font-weight:400;color:var(--muted);margin-top:4px}
-input,select,textarea{font:inherit;color:var(--text);background:#0c1424;border:1px solid #4c5871;border-radius:11px;width:100%;padding:12px;margin-top:7px;outline-offset:2px}input:focus,select:focus{outline:2px solid var(--accent)}input[type=checkbox]{width:auto;margin:0 8px 0 0;accent-color:var(--accent)}
-.control{display:flex;gap:10px;align-items:flex-start;padding:13px 14px;border-radius:12px;border:1px solid var(--border);background:var(--panel2);margin:12px 0}.control label{cursor:pointer}.control small{display:block;color:var(--muted)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border-radius:12px;border:1px solid #7b8ba2;background:#273650;color:white;padding:12px 17px;font-weight:760;text-decoration:none;font-size:.92rem}.btn:hover{background:#334969}.btn.primary{background:var(--accent);color:#0a2020;border-color:var(--accent)}.btn.primary:hover{background:#b4fbdc}.btn:disabled{opacity:.45;cursor:not-allowed}
-.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-#notice{min-height:25px;margin-top:12px;color:var(--accent);font-size:.91rem}.error{color:#ffb4ad!important}
-pre{white-space:pre-wrap;word-break:break-word;background:#0c1424;color:#d5f8e8;border:1px solid #36455d;padding:16px;border-radius:12px;font-size:.79rem;max-height:480px;overflow:auto}
-aside p,aside li{color:var(--muted);font-size:.93rem}aside ol{padding-left:20px}aside li{margin:9px 0}.separ{border-top:1px solid var(--border);margin:26px 0}
-.banner{margin:22px 0;background:#1b2b38;border:1px solid #3b6b62;padding:15px 18px;border-radius:14px}.banner strong{color:#a7ffd8}
-footer{border-top:1px solid var(--border);padding:32px 0 54px;margin-top:45px;color:var(--muted);font-size:.89rem}
-code{color:#b7e9ff} .footerline{display:flex;gap:17px;flex-wrap:wrap}.support{background:#221d3b;border:1px solid #564770;padding:21px;border-radius:16px;margin-top:20px}.support h2{margin-bottom:6px}.support p{color:#c7bcdf}
-details{border:1px solid var(--border);padding:13px;border-radius:12px;margin-top:14px;color:var(--muted)}summary{cursor:pointer;font-weight:650;color:var(--text)}
-@media(max-width:790px){.layout{grid-template-columns:1fr}.panel{padding:19px}.hero{padding-top:30px}}
-</style></head>
-<body><div class="shell">
-<header><a class="brand" href="./">⌘ <span>MAPKEPP</span> TOOLS</a><nav><a href="#generator">Конструктор</a><a href="#privacy">Безопасность</a><a href="#support">Поддержка</a></nav></header>
-<section class="hero"><div class="eyebrow">Открытые инструменты • Бесплатно для всех</div>
-<h1>Создайте команду для умного дома за пару минут</h1>
-<p>Управляйте устройствами, группами и сценариями через приложение Apple «Команды». Без платных функций, обязательной регистрации и передачи пароля или OAuth-токена сайту.</p>
-<div class="pills"><span class="pill">iPhone • iPad</span><span class="pill">Яндекс Умный дом API</span><span class="pill">Без рекламы</span><span class="pill">Открытый код</span></div></section>
-<section class="shell" style="margin:0 auto 20px;padding:0 20px"><a class="btn primary" href="./studio/">Новый конструктор: выбор домов, комнат и устройств →</a></section>
-<main id="generator" class="layout"><section class="panel">
-<h2>Конструктор Apple Команды</h2><p class="sub">Введите ID объекта из вашего умного дома. Сайт создаст файл команды для iPhone.</p>
-<form id="builder" novalidate>
-<label class="field">Название команды<input id="title" maxlength="64" value="Свет на кухне — ВКЛ" required autocomplete="off"></label>
-<label class="field">Объект управления<select id="target"><option value="device">Устройство</option><option value="group">Группа устройств</option><option value="scenario">Сценарий Яндекса</option></select></label>
-<label class="field"><span id="idLabel">ID устройства</span><input id="targetId" placeholder="Идентификатор из Яндекс Умного дома" maxlength="160" required autocomplete="off" spellcheck="false"><small>Используйте идентификатор из официального API. Не вводите сюда OAuth-токен.</small></label>
-<div id="capabilityBox">
-<label class="field">Действие<select id="capability"><option value="on">Включить</option><option value="off">Выключить</option><option value="brightness">Установить яркость</option></select></label>
-<label class="field" id="brightnessWrap" hidden>Яркость (%)<input id="brightness" type="number" min="0" max="100" step="1" value="50"></label></div>
-<div class="control"><input id="vpn" type="checkbox"><label for="vpn"><strong>Экспериментальное авто-переключение VPN</strong><small>Команда на время запроса отключит VPN, затем попытается восстановить. При ошибке VPN может остаться отключённым. Требуется выбрать профиль в редакторе iPhone.</small></label></div>
-<div class="control"><input id="consent" type="checkbox"><label for="consent"><strong>Разрешаю передать созданную команду сервису подписи</strong><small>Только после нажатия «Подписать и скачать». Файл может содержать введённый ID устройства/сценария, но никогда OAuth-токен. Используется сторонний сервис Shortcuty, независимый от нашего сайта.</small></label></div>
-<div class="buttons"><button class="btn primary" type="button" id="sign">Подписать и скачать</button><button class="btn" type="button" id="unsigned">Скачать без подписи</button><button class="btn" type="button" id="copy">Скопировать JSON</button></div>
-<div role="status" aria-live="polite" id="notice"></div></form></section>
-<aside class="panel"><h2>Что получится</h2><p class="sub">Предпросмотр HTTP-запроса. OAuth-токен вводится непосредственно на iPhone при добавлении команды.</p>
-<div><strong id="previewMethod">POST</strong> <code id="previewPath"></code></div><pre id="preview" aria-label="JSON запроса"></pre>
-<div class="banner"><strong>Ваш OAuth-токен не нужен этому сайту.</strong><div>Мы не просим его, не сохраняем и не передаём серверу подписи. Пользователь вводит токен уже на своём iPhone.</div></div>
-<h3>Установка на iPhone</h3><ol><li>Создайте команду и скачайте подписанный файл.</li><li>Откройте файл в приложении «Команды».</li><li>Введите собственный OAuth-токен с доступом <code>iot:control</code> без <code>Bearer</code>.</li><li>Если включили авто-VPN — выберите свой VPN-профиль для отключения и повторного подключения.</li><li>Проверьте действие на реальном устройстве.</li></ol>
-<details><summary>Что, если подпись не скачалась?</summary><p>Сервис Shortcuty является независимым сторонним провайдером и может быть недоступен. Скачайте неподписанный файл, затем подпишите его через <a href="https://sign.shortcuty.app/" target="_blank" rel="noopener noreferrer">страницу Shortcuty</a> вручную. Неподписанный файл iOS обычно не импортирует.</p></details>
-<details><summary>Почему VPN не обходится напрямую?</summary><p>Apple «Команды» не умеют выбирать сетевой маршрут для конкретного запроса. Экспериментальная опция временно отключает VPN, что уменьшает защищённость соединения. Надёжный вариант без разрыва — раздельная маршрутизация в VPN-клиенте.</p></details>
-</aside></main>
-<section id="privacy" class="panel" style="margin-top:22px"><h2>Прозрачность и права</h2><p class="sub">Mapkepp Tools — независимый неофициальный проект, не связанный с ООО «Яндекс» или Apple. Названия компаний используются для описания совместимости. Сайт не использует их логотипы.</p>
-<p>Страница работает без аналитики, рекламы, cookies, регистрации или хранения введённых параметров на нашем сервере. Все расчёты происходят в браузере. При выборе подписи файл отправляется на <a href="https://sign.shortcuty.app/" target="_blank" rel="noopener noreferrer">sign.shortcuty.app</a>; ознакомьтесь с правилами этого сервиса. При посещении GitHub Pages действуют условия GitHub.</p>
-<p>Поддерживаются официальные методы Яндекс API; каждый пользователь отвечает за правомерность доступа к своим устройствам. Не публикуйте токены в комментариях, скриншотах, ссылках и репозиториях.</p>
-<p><a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-protocol" target="_blank" rel="noopener noreferrer">Документация API Яндекса ↗</a></p></section>
-<section id="support" class="support"><h2>💜 Добровольно поддержать автора</h2><p>Все инструменты бесплатны и одинаково доступны каждому. Любая поддержка — добровольный безвозмездный перевод, не оплата товара, функций, приоритета или услуг.</p>
-<button id="donateBtn" class="btn" type="button">Поддержать проект</button><p id="donateMsg" role="status" aria-live="polite" style="margin-bottom:0;font-size:.88rem">Реквизиты ещё не опубликованы. Кнопка не принимает платежи.</p></section>
-<footer><div class="footerline"><span>© 2026 Mapkepp Tools — независимый проект</span><a href="https://github.com/mapkepp/loto-generator/tree/main/public-tools-hub" target="_blank" rel="noopener noreferrer">Исходный код</a><a href="https://github.com/mapkepp/loto-generator/issues" target="_blank" rel="noopener noreferrer">Сообщить об ошибке</a></div><p>Первый выпуск: Smart Home Shortcut Studio. Следующие инструменты можно публиковать в этом каталоге, сохраняя бесплатный доступ.</p></footer></div>
-<script>
-(function(){
-'use strict';
-const E=id=>document.getElementById(id);
-const F=['title','target','targetId','capability','brightness','vpn','consent'];
-const API='https://api.iot.yandex.net/v1.0';
-const SIGN='https://sign.shortcuty.app/api/v1/sign';
-const DONATION_LINK=''; // Configure only after verifying recipient and legal/payment terms.
-const xmlEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-const uuid=()=>{if(crypto&&crypto.randomUUID)return crypto.randomUUID().toUpperCase();return 'XXXXXXXX-XXXX-4XXX-YXXX-XXXXXXXXXXXX'.replace(/[XY]/g,c=>{const n=Math.floor(Math.random()*16);return (c==='X'?n:((n&3)|8)).toString(16).toUpperCase();});};
-const tt=(v,attach)=>({WFSerializationType:'WFTextTokenString',Value:Object.assign({string:v},attach?{attachmentsByRange:attach}:{})});
-const wfDict=obj=>({WFSerializationType:'WFDictionaryFieldValue',Value:{WFDictionaryFieldValueItems:Object.keys(obj).map(k=>wfField(k,obj[k]))}});
-function wfField(k,v){
- const f={WFKey:tt(k)};
- if(typeof v==='string')Object.assign(f,{WFItemType:0,WFValue:tt(v)});
- else if(typeof v==='boolean')Object.assign(f,{WFItemType:4,WFValue:{WFSerializationType:'WFNumberSubstitutableState',Value:v}});
- else if(typeof v==='number')Object.assign(f,{WFItemType:3,WFValue:{WFSerializationType:'WFNumberSubstitutableState',Value:v}});
- else if(Array.isArray(v))Object.assign(f,{WFItemType:2,WFValue:{WFSerializationType:'WFArrayParameterState',Value:v.map(x=>{const o=wfField('',x);delete o.WFKey;return o;})}});
- else if(v&&typeof v==='object')Object.assign(f,{WFItemType:1,WFValue:wfDict(v)});
- else throw Error('Неподдерживаемое значение '+k);
- return f;
-}
-function plistVal(v){
- if(v===null||v===undefined)throw Error('Значение plist отсутствует');
- if(Array.isArray(v))return '<array>'+v.map(plistVal).join('')+'</array>';
- if(typeof v==='object')return '<dict>'+Object.keys(v).map(k=>'<key>'+xmlEsc(k)+'</key>'+plistVal(v[k])).join('')+'</dict>';
- if(typeof v==='string')return '<string>'+xmlEsc(v)+'</string>';
- if(typeof v==='boolean')return v?'<true/>':'<false/>';
- if(typeof v==='number'&&Number.isFinite(v))return Number.isInteger(v)?'<integer>'+v+'</integer>':'<real>'+v+'</real>';
- throw Error('Неподдерживаемый тип plist');
-}
-function state(){
- const target=E('target').value,cap=E('capability').value,id=E('targetId').value.trim(),title=E('title').value.trim();
- if(!title||title.length>64)throw Error('Укажите название от 1 до 64 символов.');
- if(!/^[A-Za-z0-9_.:\-]{3,160}$/.test(id))throw Error('ID должен содержать 3–160 символов: латиницу, цифры, точки, двоеточия, тире или подчёркивания.');
- let url='',payload=null;
- if(target==='scenario')url=API+'/scenarios/'+encodeURIComponent(id)+'/actions';
- else{
-  const action=cap==='brightness'?{type:'devices.capabilities.range',state:{instance:'brightness',value:Number(E('brightness').value)}}:{type:'devices.capabilities.on_off',state:{instance:'on',value:cap==='on'}};
-  if(cap==='brightness'&&(!Number.isInteger(action.state.value)||action.state.value<0||action.state.value>100))throw Error('Яркость должна быть целым числом от 0 до 100.');
-  if(target==='device'){url=API+'/devices/actions';payload={devices:[{id,actions:[action]}]};}
-  else {url=API+'/groups/'+encodeURIComponent(id)+'/actions';payload={actions:[action]};}
- }
- return {id,title,target,cap,url,payload,vpn:E('vpn').checked};
-}
-function action(name,parameters){return {WFWorkflowActionIdentifier:'is.workflow.actions.'+name,WFWorkflowActionParameters:Object.assign({UUID:uuid()},parameters||{})};}
-function workflow(s){
- const tokid=uuid(),refs={'{7, 1}':{Type:'ActionOutput',OutputUUID:tokid,OutputName:'Text'}};
- const headers=wfDict({'Content-Type':'application/json'});
- const authorization={WFKey:tt('Authorization'),WFItemType:0,WFValue:tt('Bearer \uFFFC',refs)};
- headers.Value.WFDictionaryFieldValueItems.push(authorization);
- if(!s.payload)headers.Value.WFDictionaryFieldValueItems.shift();
- const acts=[action('gettext',{UUID:tokid,WFTextActionText:'YANDEX_OAUTH_TOKEN'})];
- if(s.vpn){acts.push(action('vpn.set',{WFVPNOperation:'Disconnect'}));acts.push(action('delay',{WFDelayTime:2}));}
- const params={WFURL:s.url,WFHTTPMethod:'POST',ShowHeaders:true,WFHTTPHeaders:headers};
- if(s.payload){params.WFHTTPBodyType='JSON';params.WFJSONValues=wfDict(s.payload);}
- acts.push(action('downloadurl',params));
- if(s.vpn){acts.push(action('vpn.set',{WFVPNOperation:'Connect'}));acts.push(action('delay',{WFDelayTime:2}));}
- return {
-  WFWorkflowName:s.title,WFWorkflowActions:acts,WFWorkflowClientVersion:'4033.0.4.3',
-  WFWorkflowMinimumClientVersion:900,WFWorkflowMinimumClientVersionString:'900',
-  WFWorkflowHasShortcutInputVariables:false,WFWorkflowHasOutputFallback:false,
-  WFWorkflowIcon:{WFWorkflowIconGlyphNumber:61440,WFWorkflowIconStartColor:4282601983},
-  WFWorkflowImportQuestions:[{ActionIndex:0,Category:'Parameter',ParameterKey:'WFTextActionText',Text:'Введите актуальный OAuth-токен Яндекса без слова Bearer',DefaultValue:''}],
-  WFWorkflowInputContentItemClasses:['WFStringContentItem'],WFWorkflowOutputContentItemClasses:[],
-  WFWorkflowTypes:['WFWorkflowTypeShowInSearch'],WFQuickActionSurfaces:[]
- };
-}
-function makeFile(s){const content='<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">'+plistVal(workflow(s))+'</plist>';
- const safe=s.title.replace(/[^A-Za-z0-9А-Яа-яЁё _-]/g,'_').slice(0,48).trim()||'Yandex_Smart_Home';
- return new File([content],safe+'.shortcut',{type:'application/octet-stream'});
-}
-function message(s,error){E('notice').textContent=s;E('notice').classList.toggle('error',!!error);}
-function update(){
- const target=E('target').value;
- E('capabilityBox').hidden=target==='scenario';
- E('brightnessWrap').hidden=target==='scenario'||E('capability').value!=='brightness';
- E('idLabel').textContent=target==='device'?'ID устройства':target==='group'?'ID группы':'ID сценария';
- try{
- const s=state();
- E('previewPath').textContent=s.url;
- E('preview').textContent=s.payload?JSON.stringify(s.payload,null,2):'Без тела запроса (запуск сценария)';
- }catch(err){E('previewPath').textContent='Ожидание данных';E('preview').textContent='Введите корректный ID для предпросмотра.';}
-}
-function downloadBlob(file){const href=URL.createObjectURL(file);const a=document.createElement('a');a.href=href;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),5000);}
-E('unsigned').addEventListener('click',()=>{try{const file=makeFile(state());downloadBlob(file);message('Неподписанный файл сохранён. Чтобы iPhone его импортировал, потребуется подпись.');}catch(e){message(e.message,true);}});
-E('copy').addEventListener('click',async()=>{try{const s=state(),v=JSON.stringify({method:'POST',url:s.url,body:s.payload},null,2);await navigator.clipboard.writeText(v);message('Параметры запроса скопированы. Токен отсутствует.');}catch(e){message('Копирование не удалось: '+e.message,true);}});
-E('sign').addEventListener('click',()=>{
- try{
-  if(!E('consent').checked)throw Error('Для внешней подписи нужно отдельно согласиться на передачу файла сервису Shortcuty.');
-  const file=makeFile(state());
-  const transfer=new DataTransfer();transfer.items.add(file);
-  const form=document.createElement('form');form.method='POST';form.enctype='multipart/form-data';form.action=SIGN;form.target='_blank';form.style.display='none';
-  const inp=document.createElement('input');inp.type='file';inp.name='file';inp.files=transfer.files;form.appendChild(inp);
-  document.body.appendChild(form);form.submit();form.remove();
-  message('Отправлено на подпись. Скачивание начнётся во вкладке сервиса Shortcuty, если он доступен. Проверьте загрузки Safari.');
- }catch(e){message(e.message,true);}
-});
-for(const id of F)E(id).addEventListener('input',update);
-for(const id of ['target','capability'])E(id).addEventListener('change',update);
-E('donateBtn').addEventListener('click',()=>{if(DONATION_LINK){window.open(DONATION_LINK,'_blank','noopener,noreferrer');}else{E('donateMsg').textContent='Платёжная ссылка пока не указана. Никакие данные карты сайт не запрашивает.';}});
-update();
-})();
-</script></body></html>
+:root{color-scheme:dark;--bg:#0d1322;--card:#172136;--sub:#20304b;--line:#38475f;--text:#f5f8ff;--muted:#b4c2d7;--green:#81e4b7;--blue:#afd3ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 90% 0%,#23375c,transparent 38%),var(--bg);font:16px/1.48 system-ui,-apple-system,Arial,sans-serif;color:var(--text)}
+a{color:var(--blue)}main{max-width:1050px;margin:auto;padding:16px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:12px 0 25px;gap:14px}.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);font-weight:800}.brand img{width:38px;height:38px;border-radius:11px;flex:none}
+h1{font-size:clamp(1.9rem,4vw,3.1rem);line-height:1.13;letter-spacing:-.035em;margin:30px 0 13px}h2{margin:0 0 8px;font-size:1.35rem}h3{font-size:1.05rem;margin:12px 0 7px}
+p{margin:9px 0}.muted{color:var(--muted)}.lead{font-size:1.04rem;max-width:790px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,.83fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:20px;margin-top:16px}
+button,.btn{font:inherit;font-weight:650;border:1px solid #63748f;background:#263755;color:var(--text);border-radius:11px;padding:12px 15px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+button:hover,.btn:hover{background:#324a70}.primary{color:#102a27;background:var(--green);border-color:var(--green)}.primary:hover{background:#b7ffdd}
+button:disabled{opacity:.5;cursor:not-allowed}.flex{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+input,select,textarea{font:inherit;color:var(--text);border:1px solid #5a6b88;border-radius:10px;background:#0c172a;padding:11px;width:100%;margin:6px 0 10px}textarea{height:140px;resize:vertical}
+label{display:block;font-weight:650;font-size:.95rem;margin-top:12px}.hint{font-size:.85rem;color:var(--muted)}.notice{border-radius:10px;padding:10px 12px;background:#1b3644;border:1px solid #346270;margin-top:14px}.warning{border-color:#9a7049;background:#3a2a20}
+[hidden]{display:none!important}.pill{background:#273853;border:1px solid var(--line);padding:3px 9px;border-radius:25px;font-size:.77rem}
+#tree{max-height:510px;overflow:auto}.tree-section{margin:10px 0 0}.tree-title{font-weight:800;margin:16px 0 7px;padding:10px;border-radius:9px;background:#243350}
+.room{border-left:2px solid #526989;margin-left:10px;padding:5px 0 5px 11px}.room-title{font-weight:680;font-size:.93rem;color:#d4e6ff;margin:6px 0}.item{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:6px;margin:4px 0;background:#111b2d;border-color:#38475f;padding:10px 11px;font-size:.9rem;font-weight:500}.item strong{display:block}.item small{display:block;color:#b4c2d7}.item.selected{border-color:var(--green);background:#23443c}.item:disabled{opacity:.55}
+#actionArea{display:none}#actionArea.open{display:block}
+#jsonPreview{font-size:.73rem;max-height:155px;overflow:auto;background:#0d1728;border-radius:10px;border:1px solid var(--line);padding:10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.stepnum{border:1px solid #536783;border-radius:30px;color:var(--green);display:inline-grid;place-items:center;font-size:.82rem;width:28px;height:28px;margin-right:7px}
+.divider{height:1px;background:var(--line);margin:18px 0}footer{color:var(--muted);margin:30px 0;font-size:.83rem}
+details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:10px}summary{cursor:pointer}#stats{color:var(--green);font-size:.85rem;margin:8px 0}.progress{padding:8px 0;color:var(--muted)}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.card{padding:16px}.btn,button{font-size:.92rem}#tree{max-height:420px}}
+
+.load-activity{height:9px;overflow:hidden;position:relative;border-radius:20px;margin:7px 0;background:#0d1b2e;border:1px solid #415a78}
+.load-runner{width:32%;height:100%;border-radius:20px;background:linear-gradient(90deg,#83dfd2,#b1d4ff);animation:load-sweep 1.5s ease-in-out infinite alternate}
+@keyframes load-sweep{from{transform:translateX(-105%)}to{transform:translateX(325%)}}
+@media (prefers-reduced-motion:reduce){.load-runner{animation:none;width:100%;opacity:.45}}
+</style></head><body><main>
+<header><a class="brand" href="../"><img src="../assets/siri-smart-home-icon.png" width="38" height="38" alt="" aria-hidden="true"><span>← MAPKEPP TOOLS</span></a><span class="pill">Бесплатно · Без регистрации Mapkepp</span></header>
+<h1>Выберите устройство. Создайте команду для iPhone.</h1>
+<p class="lead muted">Никаких непонятных ID: загружаем список умного дома, показываем дома, комнаты, устройства, группы и сценарии. Затем выбираем действие и скачиваем Apple Команду.</p>
+<div class="notice" id="securityNotice">Загрузка домов, комнат, устройств и сценариев подключена через защищённый сервер Supabase. Токен используется для чтения списка устройств и необязательной информации об аккаунте после вашего согласия; он не сохраняется в GitHub и не передаётся серверу подписи команд. Выберите «Загрузить мои устройства» — данные появятся ниже.</div>
+<div class="layout"><div>
+<section class="card" id="connect">
+<h2><span class="stepnum">1</span> Подключите свой Яндекс Умный дом</h2>
+<p class="muted">Не нужно искать ID устройств вручную. Авторизация происходит на стороне Яндекса; для чтения списка нужен одноразовый запрос через наш сервер.</p>
+<div class="notice" style="margin:14px 0">
+<strong>Способ 1. Войти через Яндекс ID</strong>
+<div id="yandexOfficialAuth" class="notice" style="margin:12px 0">
+  <p class="hint">Официальная кнопка Яндекс ID загружается при открытии конструктора и может показать текущий аккаунт Яндекса. Для её работы браузер обращается к Яндексу; в браузерах с ограничением сторонних cookie могут отображаться только обычные варианты входа.</p>
+  <button id="showYandexWidget" type="button">Повторить загрузку кнопки Яндекс ID</button>
+  <div id="yandexButtonContainer" style="margin-top:12px;min-height:42px"></div>
+  <p id="yandexWidgetStatus" class="hint" role="status" aria-live="polite"></p>
+  <p class="hint">Если кнопка не появляется, воспользуйтесь обычным входом или выбором другого аккаунта. Само посещение страницы не является согласием на управление умным домом.</p>
+</div>
+<p class="hint">Перейдите на официальный сайт Яндекса, разрешите доступ и вернитесь сюда. Токен будет автоматически перенесён в поле ниже <strong>только в этой вкладке</strong>. После вашего согласия проверим токен на реальном API и загрузим устройства именно выбранного аккаунта.</p>
+<p class="hint">Яндекс может запомнить предыдущую учётную запись. Нажмите «Выбрать другой аккаунт», чтобы Яндекс снова показал выбор аккаунта и подтверждение доступа.</p>
+<div class="flex"><a class="btn primary" href="https://oauth.yandex.ru/authorize?response_type=token&amp;client_id=e5942ee8886149dfadc84fa3bc89049a&amp;scope=iot%3Aview%20iot%3Acontrol&amp;redirect_uri=https%3A%2F%2Fmapkepp.github.io%2Ftools%2Foauth%2Fcallback.html" id="yandexAuth">🔐 Войти через Яндекс</a>
+<button id="switchYandexAccount" type="button">🔁 Выбрать другой аккаунт</button></div>
+<label for="loginHint">Какой аккаунт использовать? (необязательно)</label>
+<input id="loginHint" type="text" maxlength="120" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Логин Яндекса или адрес почты">
+<p class="hint">Это подсказка для формы Яндекса, а не пароль. После авторизации проверяйте показанное имя аккаунта и устройства. Выбор аккаунта происходит на сайте Яндекса.</p>
+</div>
+<label for="oauthToken">Способ 2. Вставить полученный OAuth-токен</label>
+<input id="oauthToken" type="password" autocomplete="new-password" name="mapkepp_yandex_temporary_token_no_password" readonly autocapitalize="off" spellcheck="false" placeholder="После входа токен появится здесь, либо нажмите для ручной вставки" aria-describedby="tokenHelp">
+<div id="tokenCheck" class="notice" role="status" aria-live="polite">Токен пока не подтверждён. После входа проверим его обращением к API Яндекса.</div>
+<div class="flex"><button type="button" id="copyToken" title="Скопировать токен только в буфер вашего устройства">📋 Скопировать мой токен</button><button type="button" id="revealToken">Показать / скрыть</button></div>
+<p class="hint">Буфер обмена содержит действующий ключ доступа: после использования лучше очистить его. Не отправляйте токен в сообщения и чужие чаты.</p>
+<div id="accountInfo" class="notice" hidden style="display:flex;align-items:center;gap:12px">
+<img id="accountAvatar" alt="Аватар аккаунта Яндекса" width="50" height="50" style="border-radius:50%;background:#394b69" hidden>
+<div><strong id="accountName">Аккаунт Яндекса</strong><div id="accountLogin" class="hint"></div></div>
+</div>
+<p id="tokenHelp" class="hint">Это временный OAuth-токен, а не пароль Яндекс. После обычного обновления страницы поле должно быть пустым. Токен хранится только в памяти этой вкладки. В файл команды, в URL сайта и в GitHub он не попадает.</p>
+<label style="font-size:.85rem"><input type="checkbox" id="proxyConsent" style="width:auto"> Согласен передать токен защищённым обработчикам Mapkepp Tools для чтения списка устройств несколькими небольшими запросами и, если доступно, логина и аватара Яндекса. Обезличенные технические этапы (время, размер, код ошибки) отправляются в закрытый журнал для диагностики. Токен не сохраняется и не включается в журнал.</label>
+<div class="flex"><button class="primary" type="button" id="loadDevices">🔄 Загрузить мои устройства</button><button type="button" id="clearOAuth">Очистить токен</button></div>
+<div id="loadProgress" class="notice" hidden role="status" aria-live="polite">
+<strong id="loadStep">Подключение к Яндексу…</strong>
+<progress id="loadBar" style="width:100%;height:16px;margin:9px 0" max="100"></progress>
+<small class="hint" id="loadDetail">Подождите завершения запроса.</small>
+<div class="load-activity" aria-hidden="true"><div class="load-runner"></div></div>
+<div class="hint" id="loadElapsed" aria-live="off">Время: 0 с</div>
+</div>
+<details id="networkDiagnostics" class="notice" style="margin:12px 0">
+<summary>Диагностика загрузки — подробный журнал</summary>
+<p class="hint">Копия журнала доступна в этой вкладке. Обезличенные технические события дополнительно отправляются в закрытые журналы Supabase для диагностики. Передаются только тип события, номер части, размер, HTTP-статус и длительность; токен, содержимое ответа, имена и ID устройств не отправляются. Не публикуйте скриншот поля токена.</p>
+<div class="flex"><button id="copyNetworkDiagnostics" type="button">Скопировать безопасный журнал</button><button id="clearNetworkDiagnostics" type="button">Очистить журнал</button></div>
+<pre id="networkDiagnosticLog" role="log" aria-live="polite" style="overflow:auto;max-height:270px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.78rem;padding:10px;background:#0d1727;border-radius:8px">Журнал пока пуст.</pre>
+</details>
+<div id="backendStatus" class="hint" aria-live="polite" style="margin:8px 0"></div>
+<details id="advancedImport" class="notice" style="margin-top:15px">
+<summary>Дополнительно: импортировать ранее сохранённый JSON</summary>
+<p class="hint">Этот способ необязателен. Он предназначен для диагностики или переноса уже полученного перечня устройств. Устанавливать отдельную iPhone-команду для обычной работы конструктора не требуется.</p>
+<label for="dataFile">Выбрать JSON-файл</label>
+<input id="dataFile" type="file" accept=".json,application/json,text/plain">
+<div class="flex"><button id="pasteButton" type="button">Вставить JSON из буфера</button></div>
+<label for="dataText">Или вставить JSON вручную</label>
+<textarea id="dataText" spellcheck="false" placeholder='{"status":"ok","households":[],"rooms":[],"devices":[],"groups":[],"scenarios":[]}'></textarea>
+<button type="button" id="parseButton">Показать импортированные объекты</button>
+</details>
+<div class="flex" style="margin-top:10px"><button type="button" id="demoButton">Посмотреть пример, как это работает</button><button id="clearButton" type="button">Очистить данные</button></div>
+<div id="status" class="notice" role="status" aria-live="polite">Пока данные не загружены.</div>
+</section>
+<section class="card" id="pick">
+<h2><span class="stepnum">2</span> Найдите устройство или сценарий</h2>
+<input id="search" type="search" placeholder="Поиск: кухня, свет, спальня, вечер…">
+<div id="stats"></div><div id="tree"><p class="muted">Сначала загрузите перечень устройств или откройте пример.</p></div>
+</section></div>
+<div>
+<section class="card" id="config">
+<h2><span class="stepnum">3</span> Настройте команду</h2>
+<p class="muted" id="selected">Выберите объект слева. Покажем только те действия, которые он реально поддерживает.</p>
+<div id="actionArea">
+<label for="shortcutName">Название на iPhone</label><input id="shortcutName" maxlength="60" value="">
+<label for="actionSelect">Действие</label><select id="actionSelect"></select>
+<div id="valueControls"></div>
+<p class="hint" id="actionHint"></p>
+<div class="divider"></div>
+<p><strong>Что будет отправлено Яндексу</strong></p><pre id="jsonPreview"></pre>
+<div class="divider"></div>
+<label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> на внешний сервер подписи Shortcuty</label>
+<p class="hint">При подписи сервер увидит выбранный объект и действие, но не пароль и не OAuth-токен.</p>
+<div class="flex"><button type="button" class="primary" id="downloadSign">📥 Подписать и скачать</button><button type="button" id="downloadUnsigned">Скачать файл без подписи</button></div>
+<section id="sharePanel" class="notice" style="margin-top:18px">
+<h3>📲 Передать готовую настройку на iPhone</h3>
+<p class="hint">Ссылка содержит название, ID устройства и выбранное действие, <strong>но не OAuth-токен</strong>. Подходит для Windows, Android, iPad и других устройств. Получателю потребуется свой доступ к выбранному умному дому.</p>
+<div class="flex"><button id="makeShare" type="button">🔗 Создать ссылку</button><button id="copyShare" type="button" hidden>Скопировать ссылку</button><button id="showQR" type="button" hidden>Показать QR-код</button></div>
+<label for="shareUrl" id="shareUrlLabel" hidden>Ссылка на настроенную команду</label><input id="shareUrl" type="text" readonly hidden aria-label="Ссылка на конфигурацию команды">
+<div id="qrPanel" hidden><div id="qrTarget" style="padding:14px;background:white;display:inline-block;border-radius:12px;max-width:100%"></div><p class="hint">Отсканируйте QR-код камерой iPhone и откройте ссылку в Safari. Дальше нажмите «Подписать и скачать».</p></div>
+<p id="shareStatus" class="hint" role="status"></p>
+</section>
+<section id="historyPanel" class="notice" style="margin-top:16px">
+<h3>🗂️ Мои сохранённые команды</h3>
+<p class="hint">Сохраняйте только настройки команды в этом браузере — без токенов, аккаунта и облачной регистрации. История находится исключительно на вашем устройстве. На другом устройстве её можно открыть по ссылке или перенести файлом JSON.</p>
+<div class="flex"><button type="button" id="saveHistory">Сохранить текущую команду</button><button type="button" id="exportHistory">Экспорт истории</button><button type="button" id="deleteHistory">Очистить историю</button></div>
+<input type="file" id="importHistory" accept=".json,application/json" aria-label="Импорт истории сохранённых команд">
+<div id="historyList" style="max-height:290px;overflow:auto"></div>
+<p id="historyStatus" class="hint" role="status"></p>
+</section>
+<details id="dangerShare" class="notice warning" style="margin-top:12px">
+<summary>⚠️ Особый режим: команда со встроенным токеном</summary>
+<p><strong>Опасно!</strong> Любой обладатель такого файла сможет управлять вашими устройствами Яндекса. Файл содержит ваш личный токен в читаемом виде; при подписи он будет передан внешнему сервису Shortcuty. Это не подходит для публичной публикации.</p>
+<label><input id="dangerConsent1" type="checkbox" style="width:auto"> Понимаю, что получатель получит доступ к моему умному дому.</label>
+<label><input id="dangerConsent2" type="checkbox" style="width:auto"> Согласен передать токен внешнему сервису подписи Shortcuty и доверенному получателю файла.</label>
+<label for="dangerPhrase">Для подтверждения введите <code>ПЕРЕДАТЬ ДОСТУП</code></label>
+<input id="dangerPhrase" type="text" autocomplete="off" placeholder="ПЕРЕДАТЬ ДОСТУП">
+<button type="button" id="downloadDanger">🔒 Создать личную команду со встроенным токеном</button>
+<p class="hint">Такая команда не попадёт в GitHub, ссылку или QR-код. Подписанный файл получите только в открывшейся вкладке сервиса подписи.</p>
+</details>
+<p class="hint">После установки команды iPhone предложит вам один раз ввести собственный OAuth-токен, если он ещё не сохранён. На сайт токен не передаётся.</p>
+</div>
+</section>
+<section class="card">
+<h2>💜 Поддержать автора</h2>
+<p class="muted">Донаты — это добровольные пожертвования. Они не открывают никакого дополнительного функционала и не дают преимуществ. Весь функционал доступен сразу всем полностью бесплатно, независимо от пожертвований.</p>
+<div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
+</section></div></div>
+<footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
+</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261023-stable-preflightfree2" defer></script><script src="./share.js?v=20261022-13" defer></script><script src="./yandex-widget.js?v=20261022-15" defer></script><script src="./history.js?v=20261022-14" defer></script></body></html>
