@@ -21,6 +21,11 @@ label{display:block;font-weight:650;font-size:.95rem;margin-top:12px}.hint{font-
 .divider{height:1px;background:var(--line);margin:18px 0}footer{color:var(--muted);margin:30px 0;font-size:.83rem}
 details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:10px}summary{cursor:pointer}#stats{color:var(--green);font-size:.85rem;margin:8px 0}.progress{padding:8px 0;color:var(--muted)}
 @media(max-width:760px){.layout{grid-template-columns:1fr}.card{padding:16px}.btn,button{font-size:.92rem}#tree{max-height:420px}}
+
+.load-activity{height:9px;overflow:hidden;position:relative;border-radius:20px;margin:7px 0;background:#0d1b2e;border:1px solid #415a78}
+.load-runner{width:32%;height:100%;border-radius:20px;background:linear-gradient(90deg,#83dfd2,#b1d4ff);animation:load-sweep 1.5s ease-in-out infinite alternate}
+@keyframes load-sweep{from{transform:translateX(-105%)}to{transform:translateX(325%)}}
+@media (prefers-reduced-motion:reduce){.load-runner{animation:none;width:100%;opacity:.45}}
 </style></head><body><main>
 <header><a class="brand" href="../"><img src="../assets/siri-smart-home-icon.png" width="38" height="38" alt="" aria-hidden="true"><span>← MAPKEPP TOOLS</span></a><span class="pill">Бесплатно · Без регистрации Mapkepp</span></header>
 <h1>Выберите устройство. Создайте команду для iPhone.</h1>
@@ -57,13 +62,21 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div><strong id="accountName">Аккаунт Яндекса</strong><div id="accountLogin" class="hint"></div></div>
 </div>
 <p id="tokenHelp" class="hint">Это временный OAuth-токен, а не пароль Яндекс. После обычного обновления страницы поле должно быть пустым. Токен хранится только в памяти этой вкладки. В файл команды, в URL сайта и в GitHub он не попадает.</p>
-<label style="font-size:.85rem"><input type="checkbox" id="proxyConsent" style="width:auto"> Согласен передать токен защищённым обработчикам Mapkepp Tools для чтения списка устройств и, если доступно, логина и аватара Яндекса (до двух запросов). Токен не сохраняется.</label>
+<label style="font-size:.85rem"><input type="checkbox" id="proxyConsent" style="width:auto"> Согласен передать токен защищённым обработчикам Mapkepp Tools для чтения списка устройств и, если доступно, логина и аватара Яндекса (до трёх запросов, если потребуется повторная загрузка). Токен не сохраняется.</label>
 <div class="flex"><button class="primary" type="button" id="loadDevices">🔄 Загрузить мои устройства</button><button type="button" id="clearOAuth">Очистить токен</button></div>
 <div id="loadProgress" class="notice" hidden role="status" aria-live="polite">
 <strong id="loadStep">Подключение к Яндексу…</strong>
 <progress id="loadBar" style="width:100%;height:16px;margin:9px 0" max="100"></progress>
 <small class="hint" id="loadDetail">Подождите завершения запроса.</small>
+<div class="load-activity" aria-hidden="true"><div class="load-runner"></div></div>
+<div class="hint" id="loadElapsed" aria-live="off">Время: 0 с</div>
 </div>
+<details id="networkDiagnostics" class="notice" style="margin:12px 0">
+<summary>Диагностика загрузки — подробный журнал</summary>
+<p class="hint">Журнал только в этой вкладке. Записываются этапы, длительность, HTTP-статус и количество полученных байтов. Токен, содержимое ответа, имена и ID устройств не записываются. Не публикуйте скриншот поля токена.</p>
+<div class="flex"><button id="copyNetworkDiagnostics" type="button">Скопировать безопасный журнал</button><button id="clearNetworkDiagnostics" type="button">Очистить журнал</button></div>
+<pre id="networkDiagnosticLog" role="log" aria-live="polite" style="overflow:auto;max-height:270px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.78rem;padding:10px;background:#0d1727;border-radius:8px">Журнал пока пуст.</pre>
+</details>
 <div id="backendStatus" class="hint" aria-live="polite" style="margin:8px 0"></div>
 <details id="advancedImport" class="notice" style="margin-top:15px">
 <summary>Дополнительно: импортировать ранее сохранённый JSON</summary>
@@ -133,4 +146,4 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-16" defer></script><script src="./share.js?v=20261022-13" defer></script><script src="./yandex-widget.js?v=20261022-15" defer></script><script src="./history.js?v=20261022-14" defer></script></body></html>
+</main><script src="./backend-config.js" defer></script><script src="./app.js?v=20261022-17" defer></script><script src="./share.js?v=20261022-13" defer></script><script src="./yandex-widget.js?v=20261022-15" defer></script><script src="./history.js?v=20261022-14" defer></script></body></html>
