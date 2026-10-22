@@ -55,6 +55,7 @@ try{
  const backendDiagnostics=[];
  let segmentCalls=0;
  let simulatedInterruption=false;
+ let homePreflightCount=0;
  await page.route("**/functions/v1/yandex-home",async route=>{
    const mock={
      status:"ok",households:[{id:"h",name:"Тестовый дом"}],
@@ -67,7 +68,8 @@ try{
      "access-control-expose-headers":"X-Mapkepp-Body-Bytes, X-Mapkepp-Upstream-Ms",
      "access-control-allow-methods":"POST, OPTIONS","access-control-allow-headers":"content-type",
      "content-type":"application/json","x-mapkepp-upstream-ms":"25"};
-   if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers});
+   if(route.request().method()==="OPTIONS"){homePreflightCount++;return route.fulfill({status:204,headers});}
+   assert.match(route.request().headers()["content-type"]||"",/^text\/plain/i);
    const input=JSON.parse(route.request().postData()||"{}");
    if(input.operation==="technical_diagnostics"){
      assert.ok(!route.request().postData().includes("synthetic-fake-oauth-token-123456"));
@@ -104,6 +106,7 @@ try{
  assert.match(diagnostics,/segment_complete/);
  assert.match(diagnostics,/segment_retry/);
  assert.equal(simulatedInterruption,true);
+ assert.equal(homePreflightCount,0,"Safelisted transport should not issue CORS preflight OPTIONS");
  assert.ok(segmentCalls>=2,"Multi-segment transfer expected");
  assert.match(diagnostics,/load_success/);
  assert.ok(!diagnostics.includes("synthetic-fake-oauth-token-123456"),"Diagnostic log must not contain the token");
