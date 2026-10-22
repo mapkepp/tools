@@ -30,8 +30,10 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <section class="card" id="connect">
 <h2><span class="stepnum">1</span> Получите список вашего умного дома</h2>
 <p class="muted">Без копирования ID вручную и без передачи пароля Яндекса сайту.</p>
+<div class="notice" style="margin:14px 0"><strong>Получить доступ у Яндекса (один раз)</strong><p class="hint">Нажмите кнопку ниже, войдите в Яндекс и разрешите доступ к своему умному дому. Если приложение одобрено Яндексом и адрес возврата настроен, скопируйте выданный токен и вставьте его при установке iPhone-помощника. Токен не отправляется нашему сайту.</p><a class="btn primary" href="https://oauth.yandex.ru/authorize?response_type=token&amp;client_id=a0f04364eb374e6a9297ca708c959218&amp;scope=iot%3Aview%20iot%3Acontrol&amp;redirect_uri=https%3A%2F%2Fmapkepp.github.io%2Ftools%2Foauth%2Fcallback.html" target="_blank" rel="noopener noreferrer" id="yandexAuth">🔐 Получить разрешение у Яндекса ↗</a></div>
+<p class="hint">Затем установите помощника, запустите его и скопируйте список устройств:</p>
 <div class="flex"><a class="btn" id="helperLink" href="../ios/Yandex_Home_Discovery.shortcut">📱 Получить список на iPhone</a><button id="pasteButton" type="button">Вставить из буфера</button></div>
-<p class="hint">Команда-помощник обращается к официальному API Яндекса с iPhone и копирует сведения о доме. Токен вводится при установке помощника на самом iPhone. Импортируйте полученный JSON ниже.</p>
+<p class="hint">Команда-помощник обращается к официальному API Яндекса с iPhone и копирует сведения о доме. Токен вводится при установке помощника на самом iPhone. Если авторизация открыла страницу Яндекса с кодом вместо токена, её настройка ещё не завершена; используйте инструкции ниже. Импортируйте полученный JSON ниже.</p>
 <label for="dataFile">Загрузить JSON-файл с перечнем устройств</label>
 <input id="dataFile" type="file" accept=".json,application/json,text/plain">
 <details><summary>Есть JSON в буфере? Вставьте текст</summary>
