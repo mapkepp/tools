@@ -28,6 +28,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 @media (prefers-reduced-motion:reduce){.load-runner{animation:none;width:100%;opacity:.45}}
 </style></head><body><main>
 <header><a class="brand" href="../"><img src="../assets/siri-smart-home-icon.png" width="38" height="38" alt="" aria-hidden="true"><span>← MAPKEPP TOOLS</span></a><span class="pill">Бесплатно · Без регистрации Mapkepp</span></header>
+<div class="notice" id="experimentalStudioLink"><strong>🧪 Экспериментальная версия</strong> — новые функции и испытания выполняются отдельно от основного конструктора. <a class="btn" href="../studio/" id="openExperimentalStudio">Открыть экспериментальную студию →</a></div>
 <h1>Выберите устройство. Создайте команду для iPhone.</h1>
 <p class="lead muted">Никаких непонятных ID: загружаем список умного дома, показываем дома, комнаты, устройства, группы и сценарии. Затем выбираем действие и скачиваем Apple Команду.</p>
 <div class="notice" id="securityNotice">Загрузка домов, комнат, устройств и сценариев подключена через защищённый сервер Supabase. Токен используется для чтения списка устройств и необязательной информации об аккаунте после вашего согласия; он не сохраняется в GitHub и не передаётся серверу подписи команд. Выберите «Загрузить мои устройства» — данные появятся ниже.</div>
@@ -111,6 +112,18 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> на внешний сервер подписи Shortcuty</label>
 <p class="hint">При подписи сервер увидит выбранный объект и действие, но не пароль и не OAuth-токен.</p>
 <div class="flex"><button type="button" class="primary" id="downloadSign">📥 Подписать и скачать</button><button type="button" id="downloadUnsigned">Скачать файл без подписи</button></div>
+<div id="signedReady" class="notice" hidden style="margin-top:12px">
+<strong>✅ Подписанный файл готов</strong>
+<p class="hint">В Safari сохраните подписанную команду, затем откройте файл из «Загрузок» или приложения «Файлы».</p>
+<div class="flex"><a id="signedDownload" class="btn primary" download="Mapkepp-Signed.shortcut">⬇️ Сохранить подписанную команду</a><button id="shareSigned" type="button" hidden>📤 Поделиться файлом</button></div>
+</div>
+<details id="signDiagnostics" class="notice" style="margin-top:12px">
+<summary>🧪 Подробный журнал подписания</summary>
+<p class="hint">Журнал отмечает страницу (home/studio), каждый этап и время. Токен, ID и название устройства в журнал не записываются. Обезличенные этапы также отправляются в закрытые серверные журналы Supabase.</p>
+<div id="signLogSummary" class="hint">Запрос ещё не выполнялся.</div>
+<div class="flex"><button type="button" id="copySignDiagnostics">Скопировать технический журнал</button></div>
+<pre id="signDiagnosticLog" role="log" style="white-space:pre-wrap;overflow:auto;max-height:320px;font-size:.78rem"></pre>
+</details>
 <section id="sharePanel" class="notice" style="margin-top:18px">
 <h3>📲 Передать готовую настройку на iPhone</h3>
 <p class="hint">Ссылка содержит название, ID устройства и выбранное действие, <strong>но не OAuth-токен</strong>. Подходит для Windows, Android, iPad и других устройств. Получателю потребуется свой доступ к выбранному умному дому.</p>
@@ -146,4 +159,4 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-stable-preflightfree2" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script></body></html>
+</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-stable-preflightfree2" defer></script><script src="./frozen-2026-10-23/signer.js?v=20261023-sign-log1" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script></body></html>
