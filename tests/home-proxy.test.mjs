@@ -69,3 +69,12 @@ test("published browser files contain no Yandex tokens",async()=>{
   assert.ok(config.includes('MAPKEPP_HOME_API_URL'));
   assert.ok(!/y0__[A-Za-z0-9]+/.test(index+callback+config));
 });
+
+test("Supabase free-tier function shares the reviewed read-only handler",async()=>{
+  const supabaseHandler=await fs.readFile(new URL("../supabase/functions/yandex-home/handler.js",import.meta.url),"utf8");
+  const entry=await fs.readFile(new URL("../supabase/functions/yandex-home/index.ts",import.meta.url),"utf8");
+  const config=await fs.readFile(new URL("../supabase/config.toml",import.meta.url),"utf8");
+  assert.equal(supabaseHandler,source);
+  assert.ok(entry.includes("Deno.serve("));
+  assert.ok(config.includes("verify_jwt = false"));
+});
