@@ -6,6 +6,8 @@ on:
     paths:
       - 'index.html'
       - 'assets/**'
+      - 'studio/**'
+      - 'ios/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -56,6 +58,8 @@ jobs:
           cp index.html _site/index.html
           touch _site/.nojekyll
           if [[ -d assets ]]; then cp -R assets _site/assets; fi
+          if [[ -d studio ]]; then cp -R studio _site/studio; fi
+          if [[ -d ios ]]; then cp -R ios _site/ios; fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
