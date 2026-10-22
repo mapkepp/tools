@@ -27,6 +27,35 @@ const json = (data, status, origin) => {
   }
   return new Response(JSON.stringify(data), {status, headers});
 };
+// Error telemetry is private. Intentionally excludes IP, user agent, token,
+ // request/response bodies, user names, request IDs and device IDs.
+const diagnostic = async (code, status, origin, upstreamStatus=null) => {
+  if (typeof Deno !== "undefined" && Deno.env && typeof Deno.env.get === "function") {
+    const supabaseUrl=Deno.env.get("SUPABASE_URL");
+    const serviceKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if(supabaseUrl && serviceKey) {
+      try {
+        await fetch(supabaseUrl+"/rest/v1/internal_error_events",{
+          method:"POST",headers:{
+            apikey:serviceKey,Authorization:"Bearer "+serviceKey,
+            "Content-Type":"application/json","Prefer":"return=minimal"
+          },
+          body:JSON.stringify({
+            source:"yandex-home",
+            code,
+            upstream_status:upstreamStatus
+          }),
+          signal:AbortSignal.timeout(2200),
+          cache:"no-store",
+          redirect:"error"
+        });
+      }catch{
+        // Deliberately do not log exceptions or user-related request data.
+      }
+    }
+  }
+  return json({error:code,...(upstreamStatus?{upstream_status:upstreamStatus}:{})},status,origin);
+};
 export default {
   async fetch(request) {
     const origin = request.headers.get("origin") || "";
@@ -60,22 +89,20 @@ export default {
         Accept:"application/json"
       },signal:AbortSignal.timeout(15000),cache:"no-store",redirect:"error"});
     }catch(e){
-      return json({error:e?.name==="TimeoutError"?"yandex_timeout":"yandex_unavailable"},502,origin);
+      return diagnostic(e?.name==="TimeoutError"?"yandex_timeout":"yandex_unavailable",502,origin);
     }
-    if(upstream.status===401||upstream.status===403) return json({error:"unauthorized",upstream_status:upstream.status},401,origin);
-    if(!upstream.ok) return json({error:"yandex_error",upstream_status:upstream.status},502,origin);
+    if(upstream.status===401||upstream.status===403) return diagnostic("unauthorized",401,origin,upstream.status);
+    if(!upstream.ok) return diagnostic("yandex_error",502,origin,upstream.status);
     const bytes=Number(upstream.headers.get("content-length")||0);
-    if(bytes>RESPONSE_LIMIT)return json({error:"response_too_large"},502,origin);
+    if(bytes>RESPONSE_LIMIT)return diagnostic("response_too_large",502,origin);
     let body;
-    try{body=await upstream.text();}catch{return json({error:"yandex_read_failed"},502,origin);}
-    if(body.length>RESPONSE_LIMIT)return json({error:"response_too_large"},502,origin);
+    try{body=await upstream.text();}catch{return diagnostic("yandex_read_failed",502,origin);}
+    if(body.length>RESPONSE_LIMIT)return diagnostic("response_too_large",502,origin);
     let home;
-    try{home=JSON.parse(body);}catch{return json({error:"invalid_yandex_json"},502,origin);}
+    try{home=JSON.parse(body);}catch{return diagnostic("invalid_yandex_json",502,origin);}
     if(home?.status!=="ok" || !Array.isArray(home?.households)||!Array.isArray(home?.rooms)||!Array.isArray(home?.devices)||!Array.isArray(home?.groups)||!Array.isArray(home?.scenarios)){
-      return json({error:"unexpected_yandex_response"},502,origin);
+      return diagnostic("unexpected_yandex_response",502,origin);
     }
-    // Only the Yandex incident request ID is logged, never the token or home.
-    if(typeof home.request_id==="string") console.info("Yandex Smart Home request_id",home.request_id);
     return json(home,200,origin);
   }
 };
