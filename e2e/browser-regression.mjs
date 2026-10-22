@@ -137,6 +137,14 @@ try{
  assert.equal(homePreflightCount,0,"Safelisted transport should not issue CORS preflight OPTIONS");
  assert.ok(segmentCalls>=2,"Multi-segment transfer expected");
  assert.match(diagnostics,/load_success/);
+ await page.locator("#saveInventoryBrowser").click();
+ await assert.doesNotReject(async()=>{await page.locator("#localInventoryStatus").getByText(/Локальная копия сохранена/).waitFor({timeout:12000});});
+ const exportPromise=page.waitForEvent("download",{timeout:12000});
+ await page.locator("#exportInventoryFile").click();
+ const exported=await exportPromise;
+ assert.match(exported.suggestedFilename(),/mapkepp-devices-.*\.json/);
+ console.log("PASS: device inventory exports to local JSON and persists opt-in to browser IndexedDB");
+
  assert.ok(!diagnostics.includes("synthetic-fake-oauth-token-123456"),"Diagnostic log must not contain the token");
  assert.equal(await page.locator(".load-activity .load-runner").count(),1);
  console.log("PASS: multi-segment checksum reconstruction, safe local trace, moving progress and token exclusion");
@@ -146,21 +154,40 @@ try{
  let safeSigningRequests=0;
  await page.route("**/functions/v1/shortcut-sign",async route=>{
    if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers:{"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-headers":"content-type"}});
-   safeSigningRequests++;
    const post=route.request().postDataBuffer()?.toString("utf8")||"";
-   assert.match(post,/YANDEX_OAUTH_TOKEN/);
    assert.ok(!post.includes("synthetic-fake-oauth-token-123456"));
+   if(route.request().headers()["content-type"]?.startsWith("text/plain")){
+     const trace=JSON.parse(post);
+     assert.equal(trace.page,"studio");
+     assert.ok(trace.events.some(event=>event.stage==="aea1_ok"));
+     return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:'{"ok":true}'});
+   }
+   safeSigningRequests++;
+   assert.match(post,/YANDEX_OAUTH_TOKEN/);
+   assert.match(post,/name="page"/);
+   assert.match(post,/studio/);
    return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/octet-stream"},body:Buffer.from("AEA1-synthetic-shortcut")});
  });
  await page.locator("#downloadSign").click();
  await page.locator("#signedReady").waitFor({state:"visible",timeout:15000});
  assert.match(await page.locator("#signedDownload").getAttribute("href"),/^blob:/);
  assert.equal(safeSigningRequests,1);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/studio.*generate_ok/);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/aea1_ok/);
+
  console.log("PASS: signed AEA1 browser download flow via token-free proxy and Safari-facing save control");
  await page.locator("#clearOAuth").click();
  assert.equal(await page.locator("#oauthToken").inputValue(),"");
  assert.equal(await page.locator("button.item[data-id='light']").count(),0);
  assert.match(await page.locator("#status").innerText(),/Токен удалён/);
+ await page.locator("#restoreInventoryBrowser").click();
+ await page.locator("button.item[data-id='light']").waitFor({timeout:12000});
+ assert.equal(await page.locator("#oauthToken").inputValue(),"");
+ assert.match(await page.locator("#localInventoryStatus").innerText(),/без|из браузерной копии/i);
+ await page.locator("#forgetInventoryBrowser").click();
+ await page.locator("#localInventoryStatus").getByText(/Локальная копия удалена/).waitFor();
+ console.log("PASS: offline restore after OAuth reset without network, local cache deletion");
+
  console.log("PASS: token cleanup removes previously displayed devices and cannot preserve stale inventory");
  const home=await context.newPage();
  const homepageErrors=[];
@@ -168,12 +195,35 @@ try{
  await home.goto("https://mapkepp.github.io/tools/?browser-e2e=historic-shortcuts",{waitUntil:"domcontentloaded",timeout:45000});
  assert.equal(await home.locator("#downloadSign").count(),1);
  assert.equal(await home.locator("#sharePanel").count(),1);
+ assert.equal(await home.locator("#openExperimentalStudio").getAttribute("href"),"../studio/");
+ assert.equal(await home.locator("#signDiagnosticLog").count(),1);
+
  assert.equal(await home.locator('script[src^="./frozen-2026-10-23/app.js"]').count(),1);
  await home.locator("#demoButton").click();
  await home.locator("button.item[data-id='l1']").click();
  assert.match(await home.locator("#jsonPreview").innerText(),/api.iot.yandex.net/);
  assert.equal(homepageErrors.length,0,"Frozen homepage must not throw JavaScript errors");
  console.log("PASS: homepage frozen Studio snapshot renders example and contains no page errors");
+ let homeSafeSignCount=0;
+ await home.route("**/functions/v1/shortcut-sign",async route=>{
+   if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers:{"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-headers":"content-type"}});
+   const body=route.request().postDataBuffer()?.toString("utf8")||"";
+   if(route.request().headers()["content-type"]?.startsWith("text/plain")){
+     const log=JSON.parse(body);assert.equal(log.page,"home");
+     return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:'{"ok":true}'});
+   }
+   homeSafeSignCount++;
+   assert.match(body,/YANDEX_OAUTH_TOKEN/);
+   assert.match(body,/home/);
+   return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/octet-stream"},body:Buffer.from("AEA1-synthetic-home-signed")});
+ });
+ await home.locator("#signConsent").check();
+ await home.locator("#downloadSign").click();
+ await home.locator("#signedReady").waitFor({state:"visible",timeout:15000});
+ assert.equal(homeSafeSignCount,1,"legacy form must not trigger duplicate signing");
+ assert.match(await home.locator("#signDiagnosticLog").textContent(),/home.*aea1_ok/);
+ console.log("PASS: frozen homepage signs via verified relay only once, logs as home");
+
  await home.locator("#makeShare").click();
  const rootShare=await home.locator("#shareUrl").inputValue();
  assert.match(rootShare,/\/tools\/#config=/);
