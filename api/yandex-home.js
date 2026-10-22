@@ -160,6 +160,28 @@ export default {
     if (text.length > 8192) return json({error:"request_too_large"},413,origin);
     let data;
     try{data=JSON.parse(text);}catch{return json({error:"invalid_json"},400,origin);}
+    // A tightly constrained, token-free technical trace. All accepted fields
+    // are whitelisted and numeric. Never store free text, identifiers or bodies.
+    if(data?.operation==="technical_diagnostics"){
+      const allowed=new Set(["load_start","request_start","headers_received","response_headers",
+        "chunk","stream_stopped","attempt_failed","segment_start","segment_received",
+        "segment_failed","segment_retry","segment_complete","fallback_start",
+        "load_success","load_failed","json_parse_failed","snapshot_mismatch"]);
+      if(!Array.isArray(data.events)||data.events.length<1||data.events.length>12)
+        return json({error:"bad_diagnostics"},400,origin);
+      const safe=data.events.map(event=>{
+        if(!event||!allowed.has(event.code))return null;
+        const entry={code:event.code};
+        for(const field of ["attempt","index","total","status","bytes","elapsed_ms","received_bytes","wait_ms"]){
+          const n=event[field];
+          if(Number.isSafeInteger(n)&&n>=0&&n<=3000000)entry[field]=n;
+        }
+        return entry;
+      }).filter(Boolean);
+      if(safe.length!==data.events.length)return json({error:"bad_diagnostics"},400,origin);
+      console.info("mapkepp-browser-trace "+JSON.stringify({events:safe}));
+      return json({ok:true,accepted:safe.length},200,origin);
+    }
     const token=data?.access_token;
     if(typeof token!=="string" || token.length<12 || token.length>4096 || !/^[A-Za-z0-9_~.\-+/=]+$/.test(token)){
       return json({error:"invalid_token_format"},400,origin);
@@ -188,6 +210,20 @@ export default {
     }
     const upstreamMs=Math.round(performance.now()-upstreamStart);
     const compact=slimStudioHome(home);
+    if(data?.operation==="segment"){
+      const index=data.index;
+      const PART_SIZE=2500;
+      const serialized=JSON.stringify(compact);
+      const total=Math.ceil(serialized.length/PART_SIZE);
+      if(!Number.isSafeInteger(index)||index<0||index>=total||total>400)
+        return json({error:"invalid_segment"},400,origin);
+      const digest=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(serialized)));
+      const fingerprint=Array.from(digest,b=>b.toString(16).padStart(2,"0")).join("");
+      const fragment=serialized.slice(index*PART_SIZE,(index+1)*PART_SIZE);
+      // No body, token, fingerprint of a user, or object IDs in backend logs.
+      console.info("mapkepp-segment "+JSON.stringify({index,total,fragment_chars:fragment.length,upstream_ms:upstreamMs}));
+      return json({version:1,index,total,fragment,digest:fingerprint},200,origin,{upstreamMs});
+    }
     const originalBytes=new TextEncoder().encode(body).byteLength;
     const replyBytes=new TextEncoder().encode(JSON.stringify(compact)).byteLength;
     // Numeric transport metrics only; no tokens, names, ID values or device content.
