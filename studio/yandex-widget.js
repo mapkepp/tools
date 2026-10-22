@@ -38,7 +38,10 @@
     input.dispatchEvent(new Event("input",{bubbles:true}));
     const check=$("tokenCheck");
     if(check)check.textContent="Токен Яндекс ID получен, но ещё не проверен на доступ к устройствам.";
-    message("Яндекс ID подключён. Для загрузки устройств подтвердите разрешение и нажмите «Загрузить мои устройства».");
+    message("Авторизация Яндекс ID выполнена. Персональная кнопка Яндекса может скрыться после входа; токен получен, проверка доступа к устройствам ещё выполняется.");
+    trigger.hidden=false;
+    trigger.textContent="Повторно показать кнопку Яндекс ID";
+    ready=false;
     if($("proxyConsent")?.checked)$("loadDevices")?.click();
   }
   async function mount() {
@@ -62,6 +65,8 @@
       // Do not await here: this Promise may resolve only after the user taps
       // the Yandex button. It must not block the site's other controls.
       Promise.resolve().then(()=>suggest.handler()).then(accept).catch(()=>{
+        ready=false;
+        trigger.hidden=false;
         message("Авторизация кнопкой Яндекс ID отменена или недоступна. Обычный вход работает отдельно.");
       });
     }catch{
