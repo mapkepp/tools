@@ -639,17 +639,9 @@ $("search").addEventListener("input",render);
 $("actionSelect").addEventListener("change",()=>{renderInput();const a=currentAction();if(a)$("shortcutName").value=selected.obj.name+" — "+a.label.toLocaleLowerCase("ru");});
 $("shortcutName").addEventListener("input",updatePreview);
 $("downloadUnsigned").addEventListener("click",()=>{try{save(file());status("Сохранён неподписанный шаблон. iOS требует подпись для импорта.");}catch(e){status(e.message,true);}});
-$("downloadSign").addEventListener("click",()=>{
- try{
-  if(!$("signConsent").checked)throw Error("Подтвердите передачу шаблона без токена сервису подписи.");
-  const output=file();const dt=new DataTransfer();dt.items.add(output);
-  const form=document.createElement("form");form.method="POST";form.enctype="multipart/form-data";form.action=SIGN;form.target="_blank";form.hidden=true;
-  const input=document.createElement("input");input.type="file";input.name="file";input.files=dt.files;form.append(input);document.body.append(form);form.submit();form.remove();
-  status("Команда отправлена на подпись без токена. Проверьте открывшуюся вкладку и загрузки браузера.");
- }catch(e){status(e.message,true);}
-});
 // Only metadata about a chosen action goes into a share link. Never an OAuth token.
 window.MapkeppStudio = Object.freeze({
+ createUnsigned(){return file("");},
  getShareData(){
    const r=request(), a=currentAction();
    const value = a.cap === "scenario" ? null : (selected.kind === "group" ? r.body.actions[0].state.value : r.body.devices[0].actions[0].state.value);
