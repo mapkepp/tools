@@ -75,6 +75,25 @@ try{
  assert.ok((await page.locator("#stats").innerText()).includes("1 устройств"));
  assert.match(await page.locator("#tokenCheck").innerText(),/Токен подтверждён/);
  console.log("PASS: on-page real app JavaScript renders simulated kitchen light without a profile entitlement");
+ const home=await context.newPage();
+ const homepageErrors=[];
+ home.on("pageerror",err=>homepageErrors.push(String(err).slice(0,80)));
+ await home.goto("https://mapkepp.github.io/tools/?browser-e2e=historic-shortcuts",{waitUntil:"domcontentloaded",timeout:45000});
+ await home.locator("#sampleQrOn").click();
+ await home.locator("#sampleQrCanvas img").waitFor({timeout:15000});
+ assert.match(await home.locator("#sampleQrTitle").innerText(),/ВКЛ/);
+ assert.ok((await home.locator("#sampleKitchenOn").getAttribute("href")).includes("examples/Kitchen_Light_ON.shortcut"));
+ const imageOn=await home.locator("#sampleQrCanvas img").getAttribute("src");
+ assert.ok(imageOn?.startsWith("data:image/"));
+ await home.locator("#sampleQrOff").click();
+ await home.locator("#sampleQrCanvas img").waitFor({timeout:15000});
+ assert.match(await home.locator("#sampleQrTitle").innerText(),/ВЫКЛ/);
+ assert.ok((await home.locator("#sampleKitchenOff").getAttribute("href")).includes("examples/Kitchen_Light_OFF.shortcut"));
+ const imageOff=await home.locator("#sampleQrCanvas img").getAttribute("src");
+ assert.ok(imageOff?.startsWith("data:image/") && imageOff!==imageOn);
+ assert.equal(homepageErrors.length,0,"Homepage should not throw a JS error");
+ console.log("PASS: public homepage signed sample links, local QR for ON and OFF, no JavaScript errors");
+ await home.close();
  if(errors.length)console.log("Browser page errors (redacted count):",errors.length);
 }finally{
  await browser.close();
