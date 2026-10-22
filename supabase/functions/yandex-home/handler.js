@@ -10,7 +10,7 @@ const TARGET = "https://api.iot.yandex.net/v1.0/user/info";
 const SIZE_LIMIT = 2_000_000;
 const RESPONSE_LIMIT = 2_500_000;
 
-const json = (data, status, origin) => {
+const json = (data, status, origin, metrics=null) => {
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store, no-cache, max-age=0",
@@ -24,8 +24,14 @@ const json = (data, status, origin) => {
     headers["Access-Control-Allow-Methods"] = "POST, OPTIONS";
     headers["Access-Control-Allow-Headers"] = "Content-Type";
     headers["Access-Control-Max-Age"] = "600";
+    headers["Access-Control-Expose-Headers"] = "X-Mapkepp-Body-Bytes, X-Mapkepp-Upstream-Ms";
   }
-  return new Response(JSON.stringify(data), {status, headers});
+  const payload=JSON.stringify(data);
+  if(metrics && status===200){
+    headers["X-Mapkepp-Body-Bytes"]=String(new TextEncoder().encode(payload).byteLength);
+    headers["X-Mapkepp-Upstream-Ms"]=String(metrics.upstreamMs);
+  }
+  return new Response(payload, {status, headers});
 };
 // Error telemetry is private. Intentionally excludes IP, user agent, token,
  // request/response bodies, user names, request IDs and device IDs.
@@ -82,6 +88,7 @@ export default {
     if(typeof token!=="string" || token.length<12 || token.length>4096 || !/^[A-Za-z0-9_~.\-+/=]+$/.test(token)){
       return json({error:"invalid_token_format"},400,origin);
     }
+    const upstreamStart=performance.now();
     let upstream;
     try{
       upstream=await fetch(TARGET,{method:"GET",headers:{
@@ -103,6 +110,10 @@ export default {
     if(home?.status!=="ok" || !Array.isArray(home?.households)||!Array.isArray(home?.rooms)||!Array.isArray(home?.devices)||!Array.isArray(home?.groups)||!Array.isArray(home?.scenarios)){
       return diagnostic("unexpected_yandex_response",502,origin);
     }
-    return json(home,200,origin);
+    const upstreamMs=Math.round(performance.now()-upstreamStart);
+    const replyBytes=new TextEncoder().encode(JSON.stringify(home)).byteLength;
+    // Numeric transport metrics only. Never log names, device IDs, account IDs, token, body or headers.
+    console.info("mapkepp-home transport "+JSON.stringify({result:"ready",http_status:200,reply_bytes:replyBytes,upstream_ms:upstreamMs}));
+    return json(home,200,origin,{upstreamMs});
   }
 };
