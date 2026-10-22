@@ -38,11 +38,16 @@ test("only a valid token goes to a fixed Yandex URL",async()=>{
   assert.equal(r.status,200);
   assert.equal(r.headers.get("cache-control").includes("no-store"),true);
   assert.equal(r.headers.get("access-control-expose-headers").includes("X-Mapkepp-Body-Bytes"),true);
-  assert.equal(Number(r.headers.get("x-mapkepp-body-bytes")),new TextEncoder().encode(JSON.stringify(yandexResponse)).byteLength);
+  assert.equal(Number(r.headers.get("x-mapkepp-body-bytes")),new TextEncoder().encode(JSON.stringify(j)).byteLength);
   assert.ok(Number(r.headers.get("x-mapkepp-upstream-ms"))>=0);
   const j=await r.json();
-  assert.deepEqual(j,yandexResponse);
+  assert.equal(j.status,"ok");
+  assert.equal(j.devices[0].id,yandexResponse.devices[0].id);
+  assert.equal(j.devices[0].name,yandexResponse.devices[0].name);
+  assert.deepEqual(j.rooms[0].devices,["lamp-1"]);
+  assert.equal(j.request_id,undefined);
   assert.equal(JSON.stringify(j).includes(token),false);
+  assert.ok(JSON.stringify(j).length<JSON.stringify(yandexResponse).length);
   assert.deepEqual(requested,[{
     url:"https://api.iot.yandex.net/v1.0/user/info",
     authorization:"Bearer "+token
