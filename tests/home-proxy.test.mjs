@@ -95,6 +95,52 @@ test("compact transport preserves all actionable settings and hierarchy, drops b
   assert.equal(reduced.request_id,undefined);
   assert.equal(JSON.stringify(reduced).includes("unused"),false);
 });
+test("segment responses can reassemble a large device listing without cloud storage",async()=>{
+  const bulky={
+    status:"ok",households:[{id:"h",name:"Дом"}],rooms:[],
+    devices:Array.from({length:110},(_,i)=>({
+      id:"light_"+i,name:"Многофункциональная лампа "+i,household_id:"h",
+      capabilities:[{type:"devices.capabilities.on_off",parameters:{}}]
+    })),groups:[],scenarios:[]
+  };
+  const stub=compiler(async()=>new Response(JSON.stringify(bulky),{status:200}),{info(){}},AbortSignal);
+  const pieces=[];
+  let digest,parts;
+  for(let index=0;;index++){
+    const response=await stub.fetch(request("POST",origin,{access_token:token,operation:"segment",index}));
+    assert.equal(response.status,200);
+    const result=await response.json();
+    if(index===0){digest=result.digest;parts=result.total;assert.ok(parts>1);}
+    assert.equal(result.index,index);
+    assert.equal(result.total,parts);
+    assert.equal(result.digest,digest);
+    assert.ok(result.fragment.length<=2500);
+    pieces.push(result.fragment);
+    if(index===parts-1)break;
+  }
+  const joined=pieces.join("");
+  const hash=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(joined)));
+  const hex=Array.from(hash,b=>b.toString(16).padStart(2,"0")).join("");
+  assert.equal(hex,digest);
+  assert.equal(JSON.parse(joined).devices.length,110);
+});
+test("remote technical diagnostics accept only code and bounded numeric fields, never arbitrary strings",async()=>{
+  const records=[];
+  const recording=compiler(async()=>{throw Error("must not reach Yandex");},{info:(line)=>records.push(line)},AbortSignal);
+  const valid=await recording.fetch(request("POST",origin,{operation:"technical_diagnostics",events:[
+    {code:"segment_received",index:2,bytes:1024,elapsed_ms:340,note:"PRIVATE-NAME-DO-NOT-LOG"}
+  ]}));
+  assert.equal(valid.status,200);
+  assert.equal((await valid.json()).accepted,1);
+  assert.equal(records.length,1);
+  assert.match(records[0],/segment_received/);
+  assert.equal(records[0].includes("PRIVATE-NAME"),false);
+  const invalid=await recording.fetch(request("POST",origin,{operation:"technical_diagnostics",events:[
+    {code:"evil_event",secret:"PRIVATE-NAME"}
+  ]}));
+  assert.equal(invalid.status,400);
+  assert.equal(records.length,1);
+});
 test("reject bad token and bad origin without contacting Yandex",async()=>{
   requested.length=0;
   const invalid=await app.fetch(request("POST",origin,{access_token:"short"}));
