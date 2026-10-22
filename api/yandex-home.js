@@ -79,9 +79,9 @@ const slimStudioHome = home => {
     groups:home.groups.map(x=>({
       ...linkage(x),
       ...(typeof x.type==="string"?{type:x.type}:{}),
-      devices:Array.isArray(x.devices)?x.devices.filter(id=>typeof id==="string"):[],
+      devices:orderedIds(x.devices),
       capabilities:capabilities(x)
-    })),
+    })).sort(byId),
     scenarios:home.scenarios.map(x=>({
       ...identity(x),
       is_active:x.is_active!==false
