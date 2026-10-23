@@ -10,6 +10,7 @@ on:
       - 'e2e/live-sign-handoff.mjs'
       - 'e2e/sign-journal-retention.mjs'
       - 'e2e/metrics-ui.mjs'
+      - 'e2e/live-metrics-read.mjs'
       - 'studio/metrics.js'
       - 'studio/frozen-2026-10-23/metrics.js'
       - 'index.html'
@@ -48,6 +49,8 @@ jobs:
         run: node e2e/browser-regression.mjs
       - name: Verify anonymous counters and donation links on both pages
         run: node e2e/metrics-ui.mjs
+      - name: Check production aggregate-only metrics API and rejection of private payloads
+        run: node e2e/live-metrics-read.mjs
       - name: Verify safe log persists across clicks reload and home-to-studio navigation
         run: node e2e/sign-journal-retention.mjs
       - name: Confirm real external signing with a synthetic tokenless Shortcut
