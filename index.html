@@ -129,14 +129,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p class="hint">В Safari сохраните подписанную команду, затем откройте файл из «Загрузок» или приложения «Файлы».</p>
 <div class="flex"><a id="signedDownload" class="btn primary" download="Mapkepp-Signed.shortcut">⬇️ Сохранить подписанную команду</a><button id="shareSigned" type="button" hidden>📤 Поделиться файлом</button></div>
 </div>
-<details id="signDiagnostics" class="notice" style="margin-top:12px">
-<summary>🧪 Подробный журнал подписания</summary>
-<p class="hint">Журнал отмечает страницу (home/studio), каждый этап и время. Токен, ID и название устройства в журнал не записываются. Обезличенные этапы также отправляются в закрытые серверные журналы Supabase.</p>
-<div id="signLogSummary" class="hint">Запрос ещё не выполнялся.</div>
-<div class="flex"><button type="button" id="copySignDiagnostics">Скопировать технический журнал</button> <button type="button" id="clearSignDiagnostics">Очистить журнал вручную</button></div>
-<p class="hint">Записи новых попыток добавляются к прежним. История сохраняется при перезагрузке этой вкладки. Очистка — только по отдельной кнопке (при очень большом журнале старые строки ограничиваются).</p>
-<pre id="signDiagnosticLog" role="log" style="white-space:pre-wrap;overflow:auto;max-height:320px;font-size:.78rem"></pre>
-</details>
+
 <section id="sharePanel" class="notice" style="margin-top:18px">
 <h3>📲 Передать готовую настройку на iPhone</h3>
 <p class="hint">Ссылка содержит название, ID устройства и выбранное действие, <strong>но не OAuth-токен</strong>. Подходит для Windows, Android, iPad и других устройств. Получателю потребуется свой доступ к выбранному умному дому.</p>
@@ -166,6 +159,14 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p class="hint">После установки команды iPhone предложит вам один раз ввести собственный OAuth-токен, если он ещё не сохранён. На сайт токен не передаётся.</p>
 </div>
 </section>
+<details id="signDiagnostics" class="notice" style="margin-top:12px">
+<summary>🧪 Подробный журнал подписания</summary>
+<p class="hint">Журнал отмечает страницу (home/studio), каждый этап и время. Токен, ID и название устройства в журнал не записываются. Обезличенные этапы также отправляются в закрытые серверные журналы Supabase.</p>
+<div id="signLogSummary" class="hint">Запрос ещё не выполнялся.</div>
+<div class="flex"><button type="button" id="copySignDiagnostics">Скопировать технический журнал</button> <button type="button" id="clearSignDiagnostics">Очистить журнал вручную</button></div>
+<p class="hint">Записи новых попыток добавляются к прежним. История сохраняется при перезагрузке этой вкладки. Очистка — только по отдельной кнопке (при очень большом журнале старые строки ограничиваются).</p>
+<pre id="signDiagnosticLog" role="log" style="white-space:pre-wrap;overflow:auto;max-height:320px;font-size:.78rem"></pre>
+</details>
 <section class="card">
 <h2>💜 Поддержать автора</h2>
 <p class="muted">Донаты — это добровольные пожертвования. Они не открывают никакого дополнительного функционала и не дают преимуществ. Весь функционал доступен сразу всем полностью бесплатно, независимо от пожертвований.</p>
