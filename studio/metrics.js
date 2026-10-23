@@ -6,6 +6,14 @@
   const page=location.pathname.includes("/studio/")?"studio":"home";
   const pageName=page==="home"?"Главная":"Студия";
   const output=document.getElementById("siteMetricsStatus");
+  // Scrolling to donation must NOT replace #config in a QR/shared link.
+  document.querySelector(".header-donate")?.addEventListener("click",event=>{
+    const target=document.getElementById("donate");
+    if(!target)return;
+    event.preventDefault();
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+
   const actions=new Set(["downloadSign","downloadUnsigned","loadDevices",
     "makeShare","exportInventoryFile","saveInventoryBrowser","parseButton",
     "saveHistory","exportHistory"]);
