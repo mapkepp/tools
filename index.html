@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><base href="./studio/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101a30"><link rel="icon" type="image/png" sizes="64x64" href="../assets/siri-smart-home-icon.png"><link rel="apple-touch-icon" href="../assets/siri-smart-home-icon.png"><title>Выбрать устройство — Mapkepp Tools</title>
+<!doctype html><html lang="ru"><head><base href="./studio/"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><meta name="theme-color" content="#101a30"><link rel="icon" type="image/png" sizes="64x64" href="../assets/siri-smart-home-icon.png"><link rel="apple-touch-icon" href="../assets/siri-smart-home-icon.png"><title>Выбрать устройство — Mapkepp Tools</title>
 <meta name="description" content="Конструктор Apple Команд для устройств, комнат, домов, групп и сценариев Яндекс Умного дома. Бесплатно.">
 <style>
 :root{color-scheme:dark;--bg:#0d1322;--card:#172136;--sub:#20304b;--line:#38475f;--text:#f5f8ff;--muted:#b4c2d7;--green:#81e4b7;--blue:#afd3ff}
@@ -26,8 +26,14 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 .load-runner{width:32%;height:100%;border-radius:20px;background:linear-gradient(90deg,#83dfd2,#b1d4ff);animation:load-sweep 1.5s ease-in-out infinite alternate}
 @keyframes load-sweep{from{transform:translateX(-105%)}to{transform:translateX(325%)}}
 @media (prefers-reduced-motion:reduce){.load-runner{animation:none;width:100%;opacity:.45}}
+.header-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}
+.header-donate{font-size:.79rem;padding:6px 10px;border-radius:9px;white-space:nowrap}
+.site-metrics{margin:19px 0 8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;color:var(--muted);font-size:.83rem}
+.site-metrics strong{color:var(--text);font-weight:600}
+.site-metrics small{font-size:.75rem}
+@media(max-width:550px){header{flex-wrap:wrap}.header-actions{justify-content:flex-start}.pill{font-size:.8rem}}
 </style></head><body><main>
-<header><a class="brand" href="../"><img src="../assets/siri-smart-home-icon.png" width="38" height="38" alt="" aria-hidden="true"><span>← MAPKEPP TOOLS</span></a><span class="pill">Бесплатно · Без регистрации Mapkepp</span></header>
+<header><a class="brand" href="../"><img src="../assets/siri-smart-home-icon.png" width="38" height="38" alt="" aria-hidden="true"><span>← MAPKEPP TOOLS</span></a><span class="header-actions"><span class="pill">Бесплатно · Без регистрации by Mapkepp</span><a class="btn header-donate" href="#donate" aria-label="Поддержать автора добровольным донатом">💜 Поддержать</a></span></header>
 <div class="notice" id="experimentalStudioLink"><strong>🧪 Экспериментальная версия</strong> — новые функции и испытания выполняются отдельно от основного конструктора. <a class="btn" href="../studio/" id="openExperimentalStudio">Открыть экспериментальную студию →</a></div>
 <h1>Выберите устройство. Создайте команду для iPhone.</h1>
 <p class="lead muted">Никаких непонятных ID: загружаем список умного дома, показываем дома, комнаты, устройства, группы и сценарии. Затем выбираем действие и скачиваем Apple Команду.</p>
@@ -167,10 +173,15 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p class="hint">Записи новых попыток добавляются к прежним. История сохраняется при перезагрузке этой вкладки. Очистка — только по отдельной кнопке (при очень большом журнале старые строки ограничиваются).</p>
 <pre id="signDiagnosticLog" role="log" style="white-space:pre-wrap;overflow:auto;max-height:320px;font-size:.78rem"></pre>
 </details>
-<section class="card">
+<section class="card" id="donate">
 <h2>💜 Поддержать автора</h2>
 <p class="muted">Донаты — это добровольные пожертвования. Они не открывают никакого дополнительного функционала и не дают преимуществ. Весь функционал доступен сразу всем полностью бесплатно, независимо от пожертвований.</p>
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
+<section class="site-metrics" aria-label="Обезличенная статистика сайта">
+<strong>📊 Счётчики Mapkepp Tools</strong>
+<span id="siteMetricsStatus" role="status">Счётчики загружаются…</span>
+<small>Приблизительные просмотры вкладок и нажатия основных кнопок, не уникальные люди и не успешные установки. Личные данные не собираются.</small>
+</section>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-home-offline2" defer></script><script src="./frozen-2026-10-23/signer.js?v=20261023-journal-retain2" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script><script src="./frozen-2026-10-23/local-inventory.js?v=20261023-home2" defer></script></body></html>
+</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-home-offline2" defer></script><script src="./frozen-2026-10-23/signer.js?v=20261023-journal-retain2" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script><script src="./frozen-2026-10-23/local-inventory.js?v=20261023-home2" defer></script><script src="./frozen-2026-10-23/metrics.js?v=20261023-1" defer></script></body></html>
