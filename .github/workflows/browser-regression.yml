@@ -7,6 +7,7 @@ on:
       - '.github/workflows/browser-regression.yml'
       - 'e2e/browser-regression.mjs'
       - 'e2e/live-sign-smoke.mjs'
+      - 'e2e/live-sign-handoff.mjs'
 
 permissions:
   contents: read
@@ -41,3 +42,5 @@ jobs:
         run: node e2e/browser-regression.mjs
       - name: Confirm real external signing with a synthetic tokenless Shortcut
         run: node e2e/live-sign-smoke.mjs
+      - name: Prove encrypted short-chunk handoff through deployed Supabase with synthetic Shortcut
+        run: node e2e/live-sign-handoff.mjs
