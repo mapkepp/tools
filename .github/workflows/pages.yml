@@ -6,6 +6,8 @@ on:
     paths:
       - 'index.html'
       - 'services.html'
+      - 'siri-yandex.html'
+      - 'sitemap.xml'
       - 'assets/**'
       - 'studio/**'
       - 'ios/**'
@@ -59,6 +61,8 @@ jobs:
           mkdir -p _site
           cp index.html _site/index.html
           cp services.html _site/services.html
+          cp siri-yandex.html _site/siri-yandex.html
+          cp sitemap.xml _site/sitemap.xml
           touch _site/.nojekyll
           if [[ -d assets ]]; then cp -R assets _site/assets; fi
           if [[ -d studio ]]; then cp -R studio _site/studio; fi
