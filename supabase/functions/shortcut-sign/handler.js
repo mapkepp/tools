@@ -8,7 +8,7 @@ const cors=(origin)=>origin===ORIGIN?{
  "Access-Control-Expose-Headers":"X-Mapkepp-Signed-Bytes","Vary":"Origin"
 }:{"Vary":"Origin"};
 const PAGE_SET=new Set(["home","studio"]);
-const EVENT_SET=new Set(["click","consent_ok","generate_begin","generate_ok","placeholder_ok","request_begin","headers_ok","response_read","aea1_ok","ready","download_click","share_begin","share_ok","share_cancel","failure"]);
+const EVENT_SET=new Set(["click","consent_ok","generate_begin","generate_ok","placeholder_ok","request_begin","headers_ok","response_read","aea1_ok","ready","download_click","share_begin","share_ok","share_cancel","failure","handoff_ready","chunk_begin","chunk_headers","chunk_received","chunk_retry","chunks_complete","decrypt_begin","decrypt_ok","sha256_ok","release_begin","release_done","release_failed"]);
 const cleanPage=x=>PAGE_SET.has(x)?x:"unknown";
 const cleanTrace=x=>typeof x==="string" && /^[a-f0-9-]{36}$/.test(x)?x:"none";
 const traceEvent=(page,trace,stage,extra={})=>{
@@ -110,9 +110,14 @@ export default {
          (e.http!==undefined&&(!Number.isInteger(e.http)||e.http<100||e.http>599)) ||
          (e.code!==undefined&&(!/^[a-z0-9_]{1,40}$/.test(e.code))))
         return reply({error:"invalid_trace"},400,origin);
+      if((e.index!==undefined&&(!Number.isInteger(e.index)||e.index<0||e.index>1000))||
+         (e.total!==undefined&&(!Number.isInteger(e.total)||e.total<1||e.total>1000)))
+        return reply({error:"invalid_trace"},400,origin);
       stages.push({stage:e.stage,ms:e.ms,
         ...(e.bytes!==undefined?{bytes:e.bytes}:{}),
         ...(e.http!==undefined?{http:e.http}:{}),
+        ...(e.index!==undefined?{index:e.index}:{}),
+        ...(e.total!==undefined?{total:e.total}:{}),
         ...(e.code!==undefined?{code:e.code}:{})});
     }
     for(const event of stages){
