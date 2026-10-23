@@ -9,15 +9,15 @@
 
 ## Tested offline prototype
 The local Python compiler `build_universal.py` generated `Mapkepp-My-Home-Native-UNSIGNED.shortcut` with:
-- 122 Apple native workflow actions (including 54 conditional actions and 15 guarded API request branches);
+- 153 Apple native workflow actions (including 18 guarded API request branches);
 - `Dictate Text` with Russian locale, device aliases, conflict/ambiguity guards;
-- GET `https://api.iot.yandex.net/v1.0/devices/{id}` for status;
+- GET `https://api.iot.yandex.net/v1.0/devices/{id}` for status;\n- POST `https://api.iot.yandex.net/v1.0/scenarios/{id}/actions` for previously created scenarios (three synthetic objects total);
 - POST `https://api.iot.yandex.net/v1.0/devices/actions` for on/off and brightness;
 - `Ask for Input: Number` for brightness, with min/max guards;
 - import-time OAuth token placeholder, never embedded into the unsigned file;
 - exclusion of gates/doors/locks/heaters from the initial automation template;
-- binary plist size 20,951 bytes (XML equivalent 157,847 bytes; previous Studio signing size limit 100,000 bytes);
-- six offline unit tests PASS and a successful plist binary round trip.
+- binary plist size 24,421 bytes (XML form exceeds the older Studio signing limit of 100,000 bytes);
+- seven offline unit tests PASS and a successful plist binary round trip.
 
 **Honest limits:** no physical iPhone, Apple Watch, live Yandex OAuth, Apple AEA1 signature or imported shortcut tested. Native conditional behavior and dynamic structured JSON values **may differ on-device**; do not claim functioning Apple Watch voice control. Test with synthetic IDs only until an iOS import is independently verified.
 
@@ -45,3 +45,5 @@ Sources:
 - https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-device-info
 - https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-capabilities
 - https://github.com/viticci/shortcuts-playground-plugin/blob/main/codex/skills/shortcuts-playground/CONTROL_FLOW.md
+
+**Update:** 3 synthetic objects (2 lights + 1 scenario). The 7/7 tests include scenario method/path/no-payload checks. SHA-256 of unsigned demo binary: `3d8d656ac22ccd3cd788bd9d95c856c850115b7b8dd11e5883866438710f09d4`. SHA-256 of v2 ZIP: `33ccb0be7ef570b3ef2fbf0b24a8c47e76f5655889bdc950fde38bf241e53d68`.
