@@ -389,6 +389,24 @@ function initOAuth(){
    sessionStorage.removeItem(CONSENT_KEY);
  }catch{}
  const fresh=issuedAt>0 && Date.now()-issuedAt>=0 && Date.now()-issuedAt<300000;
+ // Experimental native Apple Shortcut OAuth handoff; only activated by explicit
+ // consent on /studio/universal/. No token goes into URL or cross-origin message.
+ try {
+   const pendingKey="mapkepp.universal.oauth.pending.v1";
+   const raw=sessionStorage.getItem(pendingKey);
+   if(raw) {
+     sessionStorage.removeItem(pendingKey);
+     let marker=null;
+     try{marker=JSON.parse(raw);}catch{}
+     const recent=marker && Number.isFinite(marker.at) && Date.now()-marker.at>=0 && Date.now()-marker.at<300000;
+     if(recent && tempToken && fresh && /^[A-Za-z0-9_.~+\\/=-]{12,4096}$/.test(tempToken)) {
+       sessionStorage.setItem(TEMP_TOKEN_KEY,tempToken);
+       sessionStorage.setItem(TOKEN_TIME_KEY,String(issuedAt));
+       location.replace("./universal/?oauth=success");
+       return;
+     }
+   }
+ }catch{/* Fallback to the existing Studio OAuth behavior. */}
  if(tempToken && fresh && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(tempToken)){
    input.value=tempToken;
    tokenCheck("Токен нового Яндекс-приложения получен, но ещё не проверен API.",false);
