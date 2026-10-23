@@ -1,6 +1,7 @@
 import {chromium} from "playwright";
 import assert from "node:assert/strict";
 
+const __mockMetrics=async route=>route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:JSON.stringify({pages:{home:{visits:0,uses:0},studio:{visits:0,uses:0}},total:{visits:0,uses:0}})});
 // Live signing uses demo fixtures only. No real Yandex credentials or IDs.
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
@@ -9,6 +10,7 @@ try{
   {id:"studio",url:"https://mapkepp.github.io/tools/studio/"}
  ]){
    const page=await browser.newPage();
+   await page.route("**/functions/v1/site-metrics",__mockMetrics);
    const errors=[];page.on("pageerror",e=>errors.push(String(e).slice(0,160)));
    await page.goto(target.url+"?sign-smoke=20261023",{waitUntil:"domcontentloaded",timeout:45000});
    await page.locator("#demoButton").click();
