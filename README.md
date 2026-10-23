@@ -8,13 +8,13 @@
 
 - The main homepage now ALSO has local device list download (portable, token-free JSON), user-approved IndexedDB save, manual restore, auto-restore on a normal visit, and deletion. It uses independent frozen-script copies, with no need for recurring Yandex requests. Test coverage includes export/import and QR precedence.
 
-- Homepage is the preserved Studio UI. The user explicitly approved a prominent link to the experimental /studio/ and detailed signing logs in a later request. Homepage HTML is now frozen at blob SHA `ce9bb203d1cbc64487ef9841104216cd619961bb`; frozen assets live under `studio/frozen-2026-10-23/`, including a dedicated signer.
+- Homepage is the preserved Studio UI. The user explicitly approved a prominent link to the experimental /studio/ and detailed signing logs in a later request. Homepage HTML is now frozen at blob SHA `00cd60042a776408fb00461be1667744d487a005`; frozen assets live under `studio/frozen-2026-10-23/`, including a dedicated signer.
 - Signing uses the same safe handler for home and studio. Both produce `AEA1` via Shortcuty on synthetic fixtures. Browser and server telemetry mark every stage with `page=home|studio` and a per-attempt random trace UUID; no token or device names are logged.
 - Experimental Studio can export a token-free inventory JSON file or save it to browser IndexedDB on user action, restore it automatically on ordinary reload (unless opening a QR/shared configuration or completing OAuth), and delete the local copy. iOS native Safari behavior and real-device end-to-end remain NOT_TESTED.
 
 ## Current release — 23 October 2026
 
-- **Immutable homepage snapshot:** [main page](https://mapkepp.github.io/tools/) is a frozen Studio UI (Git blob `ce9bb203d1cbc64487ef9841104216cd619961bb`), with isolated scripts in `studio/frozen-2026-10-23/`. Do not modify `index.html` or frozen assets without a new explicit user instruction.
+- **Immutable homepage snapshot:** [main page](https://mapkepp.github.io/tools/) is a frozen Studio UI (Git blob `00cd60042a776408fb00461be1667744d487a005`), with isolated scripts in `studio/frozen-2026-10-23/`. Do not modify `index.html` or frozen assets without a new explicit user instruction.
 - **Active development:** [Studio](https://mapkepp.github.io/tools/studio/). Signed .shortcut downloads now use the restricted `shortcut-sign` Supabase function and Shortcuty. Live provider signing has passed a synthetic-data test; real Safari/iPhone import is NOT_TESTED.
 - Ready-to-use QR configuration is preserved across Yandex OAuth callback so users can copy their token without losing the prepared command.
 - Concurrency is stateless and account-isolated; per-user independent requests were tested with synthetic data. Live load/quota capacity is NOT_TESTED; local iPhone discovery + manual JSON import is optional.
@@ -97,3 +97,9 @@ No computer or paid hosting is required.
 - Apple AEA1 signer integration tested on scenario and VPN/non-VPN variants: PASS using **synthetic** IDs only.
 - Real iPhone iOS 26.6.2 import, VPN reconnection, device control, Safari cross-origin form downloads: **NOT_TESTED**.
 - Primary `mapkepp/tools` and site: **PASS**; security regression tests: **PASS**; Supabase home backend and CORS: **PASS**; real Yandex devices, iPhone execution and real payments: **NOT_TESTED**.
+
+## 23 October 2026: reliable signed file transport
+
+- Both sites submit a synthetic token-free Shortcut XML to Shortcuty via Supabase; the response is authenticated by AEA1 and SHA-256. The edge server encrypts the signed result with AES-GCM, stores ciphertext in an RLS-locked table temporarily for at most 10 minutes, and returns the decryption key only in the initial short browser response. The browser downloads small ciphertext fragments (1,536 base64 characters each), retries individual fragments, decrypts locally, checks SHA-256, creates the signed .shortcut and releases the database row. Scheduled cleanup runs every five minutes.
+- Every attempt carries page=home or page=studio and a random trace UUID. Client and Edge logs capture transport steps, per-fragment HTTP status, bytes and elapsed time; no OAuth token, home JSON or device identifiers are logged. Real Chrome cloud signing and handoff tested with fabricated device; real Yandex Browser/iPhone still NOT_TESTED.
+- Applied Harness² evidence gates and operator canon §19.8 for Hermes; separate Hermes runtime remains NOT_TESTED.
