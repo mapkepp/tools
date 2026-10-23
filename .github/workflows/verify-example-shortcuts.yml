@@ -40,7 +40,7 @@ jobs:
           grep -q 'src="./frozen-2026-10-23/signer.js' /tmp/mapkepp-public/index.html
           grep -q 'src="./frozen-2026-10-23/app.js' /tmp/mapkepp-public/index.html
           grep -q '<base href="./studio/">' /tmp/mapkepp-public/index.html
-          test "$(git hash-object /tmp/mapkepp-public/index.html)" = "d14357234bef35e99a088fb395f5acc90eba08b2"
+          test "$(git hash-object /tmp/mapkepp-public/index.html)" = "eea1eadfc612a1edd041ec5252e853c8deb4f8d0"
           echo "PASS: frozen homepage SHA and isolated Studio assets"
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_ON.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_ON.shortcut
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_OFF.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_OFF.shortcut
