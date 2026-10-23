@@ -215,6 +215,18 @@ try{
 
  assert.equal(await home.locator('script[src^="./frozen-2026-10-23/app.js"]').count(),1);
  await home.locator("#demoButton").click();
+ try{await home.locator("button.item[data-id='l1']").waitFor({timeout:12000});}
+ catch(e){
+   const diag=await home.evaluate(()=>({
+     studioPresent:typeof window.MapkeppStudio,
+     loaded:window.MapkeppStudio?.hasAnyData?.(),
+     stats:document.getElementById("stats")?.textContent?.slice(0,200),
+     status:document.getElementById("status")?.textContent?.slice(0,200),
+     items:document.querySelectorAll("button.item").length
+   }));
+   console.log("HOME SMOKE FAILURE (synthetic only)",JSON.stringify({diag,pageErrors:homepageErrors}));
+   throw e;
+ }
  await home.locator("button.item[data-id='l1']").click();
  assert.match(await home.locator("#jsonPreview").innerText(),/api.iot.yandex.net/);
  assert.equal(homepageErrors.length,0,"Frozen homepage must not throw JavaScript errors");
