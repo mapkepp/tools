@@ -8,3 +8,8 @@ verify_jwt = false
 # The caller does not have a Supabase login; server-side validation is mandatory.
 [functions.shortcut-sign]
 verify_jwt = false
+
+# Public aggregate counters: handler enforces strict Origin, two pages, two actions,
+# no cookies, user identifiers, OAuth tokens or device metadata.
+[functions.site-metrics]
+verify_jwt = false
