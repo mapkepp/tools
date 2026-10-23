@@ -1,8 +1,18 @@
 import {chromium} from "playwright";
 import assert from "node:assert/strict";
-import {createHash} from "node:crypto";
+import {createHash,createCipheriv,randomBytes,randomUUID} from "node:crypto";
 import {readFile} from "node:fs/promises";
 
+function makeSigningFixture(label){
+ const raw=Buffer.from("AEA1-synthetic-"+label+"-signed-shortcut");
+ const key=randomBytes(32),iv=randomBytes(12);
+ const cipher=createCipheriv("aes-256-gcm",key,iv);
+ const encrypted=Buffer.concat([cipher.update(raw),cipher.final(),cipher.getAuthTag()]).toString("base64");
+ const payload={version:2,id:randomUUID(),key:key.toString("base64"),iv:iv.toString("base64"),
+   digest:createHash("sha256").update(raw).digest("hex"),
+   chunks:Math.ceil(encrypted.length/1536),bytes:raw.length};
+ return {payload,encrypted};
+}
 const base="https://mapkepp.github.io/tools/studio/";
 const id="e5942ee8886149dfadc84fa3bc89049a";
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
@@ -152,27 +162,37 @@ try{
  console.log("PASS: on-page real app JavaScript renders simulated kitchen light without a profile entitlement");
  await page.locator("button.item[data-id='light']").click();
  await page.locator("#signConsent").check();
- let safeSigningRequests=0;
+ let safeSigningRequests=0,chunkFailures=0;
+ const studioSigned=makeSigningFixture("studio");
  await page.route("**/functions/v1/shortcut-sign",async route=>{
    if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers:{"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-headers":"content-type"}});
    const post=route.request().postDataBuffer()?.toString("utf8")||"";
    assert.ok(!post.includes("synthetic-fake-oauth-token-123456"));
+   const headers={"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"};
    if(route.request().headers()["content-type"]?.startsWith("text/plain")){
-     const trace=JSON.parse(post);
-     assert.equal(trace.page,"studio");
-     assert.ok(trace.events.some(event=>event.stage==="aea1_ok"));
-     return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:'{"ok":true}'});
+     const packet=JSON.parse(post);assert.equal(packet.page,"studio");
+     if(packet.operation==="sign_trace")return route.fulfill({status:200,headers,body:'{"ok":true}'});
+     if(packet.operation==="release_signed_transfer")return route.fulfill({status:200,headers,body:'{"ok":true}'});
+     assert.equal(packet.operation,"get_signed_chunk");
+     assert.equal(packet.id,studioSigned.payload.id);
+     if(packet.index===0&&chunkFailures++===0)return route.abort("failed");
+     return route.fulfill({status:200,headers,body:JSON.stringify({
+       version:2,index:packet.index,total:studioSigned.payload.chunks,
+       fragment:studioSigned.encrypted.slice(packet.index*1536,(packet.index+1)*1536)
+     })});
    }
-   safeSigningRequests++;
-   assert.match(post,/YANDEX_OAUTH_TOKEN/);
-   assert.match(post,/name="page"/);
-   assert.match(post,/studio/);
-   return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/octet-stream"},body:Buffer.from("AEA1-synthetic-shortcut")});
+   safeSigningRequests++;assert.match(post,/YANDEX_OAUTH_TOKEN/);assert.match(post,/name="mode"/);
+   assert.match(post,/prepare/);assert.match(post,/studio/);
+   return route.fulfill({status:200,headers,body:JSON.stringify(studioSigned.payload)});
  });
  await page.locator("#downloadSign").click();
  await page.locator("#signedReady").waitFor({state:"visible",timeout:15000});
  assert.match(await page.locator("#signedDownload").getAttribute("href"),/^blob:/);
  assert.equal(safeSigningRequests,1);
+ assert.ok(chunkFailures>0);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/chunk_retry/);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/decrypt_ok/);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/sha256_ok/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/studio.*generate_ok/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/aea1_ok/);
 
@@ -232,23 +252,31 @@ try{
  assert.equal(homepageErrors.length,0,"Frozen homepage must not throw JavaScript errors");
  console.log("PASS: homepage frozen Studio snapshot renders example and contains no page errors");
  let homeSafeSignCount=0;
+ const homeSigned=makeSigningFixture("home");
  await home.route("**/functions/v1/shortcut-sign",async route=>{
    if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers:{"access-control-allow-origin":"https://mapkepp.github.io","access-control-allow-headers":"content-type"}});
-   const body=route.request().postDataBuffer()?.toString("utf8")||"";
+   const raw=route.request().postDataBuffer()?.toString("utf8")||"";
+   const headers={"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"};
    if(route.request().headers()["content-type"]?.startsWith("text/plain")){
-     const log=JSON.parse(body);assert.equal(log.page,"home");
-     return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:'{"ok":true}'});
+     const packet=JSON.parse(raw);assert.equal(packet.page,"home");
+     if(packet.operation==="sign_trace"||packet.operation==="release_signed_transfer")
+       return route.fulfill({status:200,headers,body:'{"ok":true}'});
+     assert.equal(packet.operation,"get_signed_chunk");
+     return route.fulfill({status:200,headers,body:JSON.stringify({version:2,index:packet.index,
+       total:homeSigned.payload.chunks,
+       fragment:homeSigned.encrypted.slice(packet.index*1536,(packet.index+1)*1536)})});
    }
-   homeSafeSignCount++;
-   assert.match(body,/YANDEX_OAUTH_TOKEN/);
-   assert.match(body,/home/);
-   return route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/octet-stream"},body:Buffer.from("AEA1-synthetic-home-signed")});
+   homeSafeSignCount++;assert.match(raw,/YANDEX_OAUTH_TOKEN/);
+   assert.match(raw,/name="mode"/);assert.match(raw,/prepare/);
+   return route.fulfill({status:200,headers,body:JSON.stringify(homeSigned.payload)});
  });
  await home.locator("#signConsent").check();
  await home.locator("#downloadSign").click();
  await home.locator("#signedReady").waitFor({state:"visible",timeout:15000});
  assert.equal(homeSafeSignCount,1,"legacy form must not trigger duplicate signing");
  assert.match(await home.locator("#signDiagnosticLog").textContent(),/home.*aea1_ok/);
+ assert.match(await home.locator("#signDiagnosticLog").textContent(),/chunks_complete/);
+ assert.match(await home.locator("#signDiagnosticLog").textContent(),/decrypt_ok/);
  console.log("PASS: frozen homepage signs via verified relay only once, logs as home");
 
  await home.locator("#makeShare").click();
