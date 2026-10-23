@@ -242,6 +242,28 @@ try{
  await home.locator("#makeShare").click();
  const rootShare=await home.locator("#shareUrl").inputValue();
  assert.match(rootShare,/\/tools\/#config=/);
+ // Save real-shaped imported inventory on main (NOT the demonstration fixture).
+ const rootInventory={
+   status:"ok",households:[{id:"fh",name:"Дом офлайн"}],
+   rooms:[{id:"fr",name:"Кухня офлайн",household_id:"fh",devices:["offline-home-lamp"]}],
+   devices:[{id:"offline-home-lamp",name:"Лампа офлайн",household_id:"fh",room:"fr",
+     type:"devices.types.light",capabilities:[{type:"devices.capabilities.on_off",parameters:{}}]}],
+   groups:[],scenarios:[]
+ };
+ await home.locator("#dataFile").setInputFiles({name:"home-devices.json",
+   mimeType:"application/json",buffer:Buffer.from(JSON.stringify(rootInventory))});
+ await home.locator("button.item[data-id='offline-home-lamp']").waitFor({timeout:12000});
+ await home.locator("#saveInventoryBrowser").click();
+ await home.locator("#localInventoryStatus").getByText(/Локальная копия сохранена/).waitFor({timeout:12000});
+ const localDownload=home.waitForEvent("download",{timeout:12000});
+ await home.locator("#exportInventoryFile").click();
+ const savedFile=await localDownload;
+ assert.match(savedFile.suggestedFilename(),/^mapkepp-devices-\d{4}-\d{2}-\d{2}\.json$/);
+ const localExport=JSON.parse((await readFile(await savedFile.path())).toString("utf8"));
+ assert.equal(localExport.devices[0].id,"offline-home-lamp");
+ assert.deepEqual(localExport.rooms[0].devices,["offline-home-lamp"]);
+ assert.ok(!JSON.stringify(localExport).includes("access_token"));
+ console.log("PASS: main-page loaded devices exported to local JSON and saved in IndexedDB");
  await home.goto(rootShare,{waitUntil:"domcontentloaded"});
  assert.match(await home.locator("#jsonPreview").innerText(),/l1/);
  let rootOAuthState="";
@@ -256,6 +278,20 @@ try{
  await home.waitForURL("**/studio/?oauth=success",{timeout:15000});
  assert.match(await home.locator("#jsonPreview").innerText(),/l1/);
  console.log("PASS: frozen root QR link survives same-tab Yandex OAuth callback to active Studio");
+ let unexpectedInventoryFetches=0;
+ await home.route("**/functions/v1/yandex-home",async route=>{
+   unexpectedInventoryFetches++;
+   await route.abort("blockedbyclient");
+ });
+ await home.goto("https://mapkepp.github.io/tools/?offline-home-reopen=1",{waitUntil:"domcontentloaded"});
+ await home.locator("button.item[data-id='offline-home-lamp']").waitFor({timeout:12000});
+ assert.equal(unexpectedInventoryFetches,0,"Local restoration must not fetch the inventory from Yandex/Supabase");
+ assert.equal(await home.locator("#oauthToken").inputValue(),"");
+ await home.locator("#forgetInventoryBrowser").click();
+ await home.locator("#localInventoryStatus").getByText(/Локальная копия удалена/).waitFor({timeout:12000});
+ await home.reload({waitUntil:"domcontentloaded"});
+ assert.equal(await home.locator("button.item[data-id='offline-home-lamp']").count(),0);
+ console.log("PASS: main-page offline inventory auto-restores without network or token, then deletes safely");
  await home.close();
  if(errors.length)console.log("Browser page errors (redacted count):",errors.length);
 }finally{
