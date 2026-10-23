@@ -2,10 +2,12 @@ import {chromium} from "playwright";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 
+const __mockMetrics=async route=>route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:JSON.stringify({pages:{home:{visits:0,uses:0},studio:{visits:0,uses:0}},total:{visits:0,uses:0}})});
 // Tests only fabricated UI interactions; never contacts Yandex or Shortcuty.
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try {
  const ctx=await browser.newContext();
+ await ctx.route("**/functions/v1/site-metrics",__mockMetrics);
  const page=await ctx.newPage();
  const telemetry=[];
  await page.route("**/functions/v1/shortcut-sign",async route=>{
