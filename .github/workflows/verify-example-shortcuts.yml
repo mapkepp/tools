@@ -30,6 +30,7 @@ jobs:
           grep -q 'Бесплатно · Без регистрации by Mapkepp' /tmp/mapkepp-public/index.html
           grep -q 'class="btn header-donate"' /tmp/mapkepp-public/index.html
           grep -q 'id="siteMetricsStatus"' /tmp/mapkepp-public/index.html
+          grep -q 'уникальные браузеры' /tmp/mapkepp-public/index.html || grep -q 'Уникальные браузеры' /tmp/mapkepp-public/index.html
           grep -q 'src="./frozen-2026-10-23/metrics.js' /tmp/mapkepp-public/index.html
           grep -q 'id="exportInventoryFile"' /tmp/mapkepp-public/index.html
           grep -q 'id="saveInventoryBrowser"' /tmp/mapkepp-public/index.html
@@ -39,7 +40,7 @@ jobs:
           grep -q 'src="./frozen-2026-10-23/signer.js' /tmp/mapkepp-public/index.html
           grep -q 'src="./frozen-2026-10-23/app.js' /tmp/mapkepp-public/index.html
           grep -q '<base href="./studio/">' /tmp/mapkepp-public/index.html
-          test "$(git hash-object /tmp/mapkepp-public/index.html)" = "877b21166e43ccc60dfef60a36f1e0e20931a745"
+          test "$(git hash-object /tmp/mapkepp-public/index.html)" = "d14357234bef35e99a088fb395f5acc90eba08b2"
           echo "PASS: frozen homepage SHA and isolated Studio assets"
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_ON.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_ON.shortcut
           curl --fail --silent --show-error --location --retry 4 --retry-delay 3 --max-time 30 "${root}/examples/Kitchen_Light_OFF.shortcut" -o /tmp/mapkepp-public/Kitchen_Light_OFF.shortcut
