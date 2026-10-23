@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {createHash,createCipheriv,randomBytes,randomUUID} from "node:crypto";
 import {readFile} from "node:fs/promises";
 
+const __mockMetrics=async route=>route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:JSON.stringify({pages:{home:{visits:0,uses:0},studio:{visits:0,uses:0}},total:{visits:0,uses:0}})});
 function makeSigningFixture(label){
  const raw=Buffer.from("AEA1-synthetic-"+label+"-signed-shortcut");
  const key=randomBytes(32),iv=randomBytes(12);
@@ -18,6 +19,7 @@ const id="e5942ee8886149dfadc84fa3bc89049a";
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
  const context=await browser.newContext({viewport:{width:1280,height:900}});
+ await context.route("**/functions/v1/site-metrics",__mockMetrics);
  const page=await context.newPage();
  await page.route("**/studio/signer.js*",async route=>route.fulfill({status:200,contentType:"text/javascript",body:await readFile("studio/signer.js","utf8")}));
  const errors=[];
