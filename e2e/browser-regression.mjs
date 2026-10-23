@@ -188,7 +188,15 @@ try{
    return route.fulfill({status:200,headers,body:JSON.stringify(studioSigned.payload)});
  });
  await page.locator("#downloadSign").click();
- await page.locator("#signedReady").waitFor({state:"visible",timeout:15000});
+ try{await page.locator("#signedReady").waitFor({state:"visible",timeout:15000});}
+ catch(err){
+   console.error("STUDIO SIGNING DIAG:",JSON.stringify({
+     status:(await page.locator("#status").textContent()).slice(0,150),
+     log:(await page.locator("#signDiagnosticLog").textContent()).slice(-1200),
+     errors:errors.slice(-5)
+   }));
+   throw err;
+ }
  assert.match(await page.locator("#signedDownload").getAttribute("href"),/^blob:/);
  assert.equal(safeSigningRequests,1);
  assert.ok(chunkFailures>0);
