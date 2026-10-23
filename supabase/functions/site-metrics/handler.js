@@ -1,8 +1,9 @@
 // Mapkepp Tools — aggregate, anonymous and strictly allowlisted counters.
 // No cookies, tokens, IPs, device names, page URLs or visitor IDs are collected.
+// New unique_* events are browser-side one-time signals without IDs; totals are approximate.
 const ORIGIN="https://mapkepp.github.io";
 const VALID_PAGES=new Set(["home","studio"]);
-const VALID_EVENTS=new Set(["visit","use"]);
+const VALID_EVENTS=new Set(["visit","use","unique_first","unique_page"]);
 const cors=o=>o===ORIGIN?{
   "Access-Control-Allow-Origin":ORIGIN,
   "Access-Control-Allow-Methods":"GET, POST, OPTIONS",
@@ -43,19 +44,22 @@ async function query(path,method,body){
   return JSON.parse(bodyText);
  }finally{clearTimeout(timer);}
 }
-const zero=()=>({visits:0,uses:0});
-function summarize(rows){
+const zero=()=>({visits:0,uses:0,uniqueBrowsers:0});
+function summarize(rows,totalRows){
  const pages={home:zero(),studio:zero()};
- if(!Array.isArray(rows))throw Error("invalid_counts");
+ if(!Array.isArray(rows)||!Array.isArray(totalRows))throw Error("invalid_counts");
  for(const row of rows){
   if(!VALID_PAGES.has(row.page))continue;
-  const visits=Number(row.visits),uses=Number(row.uses);
-  if(!Number.isSafeInteger(visits)||visits<0||!Number.isSafeInteger(uses)||uses<0)
+  const visits=Number(row.visits),uses=Number(row.uses),uniqueBrowsers=Number(row.unique_browsers);
+  if([visits,uses,uniqueBrowsers].some(x=>!Number.isSafeInteger(x)||x<0))
    throw Error("invalid_counts");
-  pages[row.page]={visits,uses};
+  pages[row.page]={visits,uses,uniqueBrowsers};
  }
+ const overall=Number(totalRows[0]?.unique_browsers);
+ if(!Number.isSafeInteger(overall)||overall<0)throw Error("invalid_total");
  return {pages,total:{visits:pages.home.visits+pages.studio.visits,
-  uses:pages.home.uses+pages.studio.uses}};
+  uses:pages.home.uses+pages.studio.uses,
+  uniqueBrowsers:overall}};
 }
 export default {
  async fetch(request){
@@ -83,8 +87,11 @@ export default {
     // are accepted. The increment is atomic for simultaneous visitors.
     await query("rpc/mapkepp_count_site_event","POST",{p_page:body.page,p_event:body.event});
    }
-   const rows=await query("mapkepp_site_metrics?select=page,visits,uses","GET");
-   return result(summarize(rows),200,origin);
+   const [rows,totalRows]=await Promise.all([
+     query("mapkepp_site_metrics?select=page,visits,uses,unique_browsers","GET"),
+     query("mapkepp_site_unique_totals?select=unique_browsers&id=eq.1","GET")
+   ]);
+   return result(summarize(rows,totalRows),200,origin);
   }catch{
    return result({error:"metrics_unavailable"},503,origin);
   }
