@@ -185,7 +185,7 @@
        }
        clearTimeout(timer);
        const downloaded=await retrieveSigned(result);
-       body=downloaded.buffer.slice(downloaded.byteOffset,downloaded.byteOffset+downloaded.byteLength);
+       body=downloaded; // crypto.subtle.decrypt returns ArrayBuffer, not Uint8Array
      }finally{clearTimeout(timer);}
      log("response_read",{bytes:body.byteLength});
      if(body.byteLength<8||body.byteLength>1000000||
