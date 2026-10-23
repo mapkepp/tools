@@ -89,6 +89,17 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <textarea id="dataText" spellcheck="false" placeholder='{"status":"ok","households":[],"rooms":[],"devices":[],"groups":[],"scenarios":[]}'></textarea>
 <button type="button" id="parseButton">Показать импортированные объекты</button>
 </details>
+<section id="offlineInventory" class="notice" style="margin-top:14px">
+<strong>💾 Мой список устройств — без повторной загрузки из Яндекса</strong>
+<p class="hint">Сохраните после первой загрузки. Локальный файл JSON можно открыть на iPhone или компьютере через поле «Выбрать JSON-файл» выше. По желанию сохраните копию в этом браузере: при обычном следующем посещении сайт восстановит её автоматически, без Supabase. Список содержит названия и ID ваших устройств, но не OAuth-токен. Не публикуйте файл. Данные могут устареть — обновляйте вручную при изменениях умного дома.</p>
+<div class="flex">
+<button type="button" id="exportInventoryFile">⬇️ Скачать список в JSON</button>
+<button type="button" id="saveInventoryBrowser">💾 Сохранить в этом браузере</button>
+<button type="button" id="restoreInventoryBrowser">📂 Открыть сохранённый список</button>
+<button type="button" id="forgetInventoryBrowser">Удалить локальную копию</button>
+</div>
+<p id="localInventoryStatus" class="hint" role="status">Список хранится только после вашего выбора. Он не синхронизируется между устройствами.</p>
+</section>
 <div class="flex" style="margin-top:10px"><button type="button" id="demoButton">Посмотреть пример, как это работает</button><button id="clearButton" type="button">Очистить данные</button></div>
 <div id="status" class="notice" role="status" aria-live="polite">Пока данные не загружены.</div>
 </section>
@@ -159,4 +170,4 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <div class="flex"><a class="btn" href="https://t.tb.ru/pm_short/7Ixu10XDRWa" target="_blank" rel="noopener noreferrer">Т-Банк</a><a class="btn" href="https://yoomoney.ru/fundraise/1L2T11QBAHF.261022" target="_blank" rel="noopener noreferrer">ЮMoney</a></div>
 </section></div></div>
 <footer>Неофициальный независимый инструмент, без связи с Яндексом и Apple. При автоматической загрузке токен передаётся защищённым обработчикам для чтения списка устройств и логина Яндекса; ответ обрабатывается в браузере, без сохранения в базе. Не публикуйте экспорт дома и OAuth-токены. <a href="https://github.com/mapkepp/tools" target="_blank" rel="noopener noreferrer">Открытый код</a> · <a href="https://yandex.ru/dev/dialogs/smart-home/doc/ru/concepts/platform-user-info" target="_blank" rel="noopener noreferrer">Документация Яндекса</a> · <a href="../services.html">Используемые сервисы и лицензии</a></footer>
-</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-stable-preflightfree2" defer></script><script src="./frozen-2026-10-23/signer.js?v=20261023-sign-log1" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script></body></html>
+</main><script src="./frozen-2026-10-23/backend-config.js" defer></script><script src="./frozen-2026-10-23/app.js?v=20261023-home-offline1" defer></script><script src="./frozen-2026-10-23/signer.js?v=20261023-sign-log1" defer></script><script src="./frozen-2026-10-23/share.js?v=20261022-13" defer></script><script src="./frozen-2026-10-23/yandex-widget.js?v=20261022-15" defer></script><script src="./frozen-2026-10-23/history.js?v=20261022-14" defer></script><script src="./frozen-2026-10-23/local-inventory.js?v=20261023-home1" defer></script></body></html>
