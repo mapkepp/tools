@@ -29,6 +29,7 @@ try{
  assert.equal(await page.locator("#yandexAuth").count(),1);
  console.log("PASS: initial page and empty token");
  await page.locator("#demoButton").click();
+ await page.locator("button.item[data-id='l1']").waitFor({timeout:15000}).catch(async err=>{text("failure while running: "+String(err).slice(0,100));throw err;});
  await page.locator("button.item[data-id='l1']").click();
  await page.locator("#actionSelect").selectOption("2");
  await page.locator("#actionValue").fill("42");
