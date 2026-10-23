@@ -47,7 +47,8 @@ try {
    prior+=2;
    console.log("PASS: "+item.name+" journal accumulates attempts, has unique trace, highlights consent and survives reload");
  }
- await page.locator("#signDiagnostics").evaluate(el=>{el.open=true;});
+ assert.equal(await page.locator("#signDiagnostics summary").isVisible(),true,"Journal summary must be visible without selecting a device");
+ await page.locator("#signDiagnostics summary").click();
  await page.locator("#clearSignDiagnostics").click();
  assert.equal((await page.locator("#signDiagnosticLog").textContent()).trim(),"");
  await page.reload({waitUntil:"domcontentloaded"});
