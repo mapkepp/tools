@@ -49,6 +49,8 @@ try{
    assert.equal(await page.locator("#donate").count(),1);
    assert.ok(events.some(x=>x.page===id&&x.event==="visit"));
    await page.waitForFunction(()=>document.getElementById("siteMetricsStatus").textContent.includes("уникальных браузеров"));
+   await page.waitForFunction(()=>document.getElementById("siteMetricsStatus").textContent.includes("≈1 уникальных браузеров"),
+      null,{timeout:12000});
    assert.ok(events.some(x=>x.page===id&&x.event===(id==="home"?"unique_first":"unique_page")),
      "Each page first view must contribute one local-only unique event");
    await page.locator("#demoButton").click();
@@ -73,6 +75,8 @@ try{
  }
  assert.deepEqual(rows,{home:{visits:1,uses:1,uniqueBrowsers:1},studio:{visits:1,uses:1,uniqueBrowsers:1}});
  assert.equal(siteUnique,1,"One browser switching between home and studio is one site visitor");
+ assert.ok(!events.some(x=>Object.keys(x).some(k=>/id|token|fingerprint|device|user|ip/i.test(k))),
+   "Only page/event may leave browser");
  assert.ok(!JSON.stringify(events).includes("PERSONAL_DEVICE_NAME"));
  console.log("PASS: one unique browser across home and studio, no transmitted IDs, names, or OAuth");
 }finally{await browser.close();}
