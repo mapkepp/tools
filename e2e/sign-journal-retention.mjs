@@ -26,7 +26,7 @@ try {
  let prior=0;
  for(const item of urls){
    await page.goto(item.url+"?log-retention-check=20261023",{waitUntil:"domcontentloaded",timeout:45000});
-   await page.locator("#clearSignDiagnostics").waitFor({timeout:15000});
+   await page.locator("#clearSignDiagnostics").waitFor({state:"attached",timeout:15000});
    const before=await page.locator("#signDiagnosticLog").textContent();
    assert.ok((before.match(/consent_missing/g)||[]).length>=prior);
    await page.locator("#demoButton").click();
@@ -47,6 +47,7 @@ try {
    prior+=2;
    console.log("PASS: "+item.name+" journal accumulates attempts, has unique trace, highlights consent and survives reload");
  }
+ await page.locator("#signDiagnostics").evaluate(el=>{el.open=true;});
  await page.locator("#clearSignDiagnostics").click();
  assert.equal((await page.locator("#signDiagnosticLog").textContent()).trim(),"");
  await page.reload({waitUntil:"domcontentloaded"});
