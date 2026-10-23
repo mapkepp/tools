@@ -49,9 +49,9 @@ test("private counters allow only aggregate page and action enums",async()=>{
   assert.equal(read.status,200);
   assert.equal(read.headers.get("Access-Control-Allow-Origin"),ORIGIN);
   assert.deepEqual(await read.json(),{pages:{home:{visits:1,uses:1},studio:{visits:0,uses:1}},total:{visits:1,uses:2}});
-  assert.equal(calls,6);
+  assert.equal(calls,7);
   assert.equal((await handler.fetch(req("POST",{page:"home",event:"visit"},"https://attacker.invalid"))).status,403);
   assert.equal((await handler.fetch(req("GET",null,"https://attacker.invalid"))).status,403);
-  assert.equal(calls,6,"no database requests for untrusted origins");
+  assert.equal(calls,7,"no database requests for untrusted origins");
  }finally{globalThis.fetch=previous;globalThis.Deno=oldDeno;}
 });
