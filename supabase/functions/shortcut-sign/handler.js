@@ -21,6 +21,69 @@ const reply=(data,status,origin)=>new Response(JSON.stringify(data),{
 });
 const toHex=bytes=>Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
 const digest=async bytes=>toHex(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)));
+
+const HANDOFF_TABLE="mapkepp_signed_transfers";
+const PART_CHARS=1536;
+const b64=arr=>{let s="";for(let i=0;i<arr.length;i+=8192)s+=String.fromCharCode(...arr.slice(i,i+8192));return btoa(s);};
+const admin=()=>{
+ const env=globalThis.Deno?.env;
+ const url=env?.get("SUPABASE_URL");
+ const legacy=env?.get("SUPABASE_SERVICE_ROLE_KEY");
+ let secret=legacy;
+ if(!secret){try{secret=JSON.parse(env?.get("SUPABASE_SECRET_KEYS")||"{}").default;}catch{}}
+ return url&&secret?{url,key:secret,legacy:!!legacy}:null;
+};
+async function dbCall(path,method,body){
+ const cfg=admin();if(!cfg)throw Error("no_admin_credentials");
+ const headers={apikey:cfg.key,Prefer:"return=representation"};
+ if(cfg.legacy)headers.Authorization="Bearer "+cfg.key;
+ if(body!==undefined)headers["Content-Type"]="application/json";
+ const response=await fetch(cfg.url+"/rest/v1/"+HANDOFF_TABLE+path,{
+  method,headers,body:body===undefined?undefined:JSON.stringify(body),
+  redirect:"error",cache:"no-store",signal:AbortSignal.timeout(10000)
+ });
+ if(!response.ok)throw Error("database_http_"+response.status);
+ const raw=await response.text();
+ return raw?JSON.parse(raw):[];
+}
+async function prepareHandoff(decoded,hash,page,trace,step){
+ const aesKey=crypto.getRandomValues(new Uint8Array(32)),iv=crypto.getRandomValues(new Uint8Array(12));
+ const key=await crypto.subtle.importKey("raw",aesKey,"AES-GCM",false,["encrypt"]);
+ const ciphertext=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,decoded));
+ const id=crypto.randomUUID(),value=b64(ciphertext);
+ step("handoff_encrypted",{bytes:ciphertext.length});
+ await dbCall("", "POST", {
+  id,ciphertext:value,iv:b64(iv),signed_sha256:hash,bytes:decoded.length,
+  expires_at:new Date(Date.now()+10*60*1000).toISOString()
+ });
+ step("handoff_stored",{bytes:ciphertext.length});
+ return {id,key:b64(aesKey),iv:b64(iv),digest:hash,
+  chunks:Math.ceil(value.length/PART_CHARS),bytes:decoded.length,version:2};
+}
+async function readHandoff(payload,origin){
+ const page=cleanPage(payload?.page),trace=cleanTrace(payload?.trace);
+ const started=performance.now();
+ const traceStep=(stage,extra={})=>traceEvent(page,trace,stage,{ms:Math.round(performance.now()-started),...extra});
+ if(!/^[a-f0-9-]{36}$/.test(payload?.id||""))return reply({error:"invalid_transfer"},400,origin);
+ const operation=payload.operation;
+ if(operation==="release_signed_transfer"){
+  try{await dbCall("?id=eq."+encodeURIComponent(payload.id),"DELETE");traceStep("handoff_released");return reply({ok:true},200,origin);}
+  catch{traceStep("handoff_release_failed");return reply({error:"handoff_unavailable"},503,origin);}
+ }
+ const index=payload.index;
+ if(!Number.isSafeInteger(index)||index<0||index>1000)return reply({error:"invalid_chunk_index"},400,origin);
+ let rows;
+ try{rows=await dbCall("?id=eq."+encodeURIComponent(payload.id)+"&select=ciphertext,iv,signed_sha256,bytes,expires_at","GET");}
+ catch{traceStep("chunk_database_failed",{index});return reply({error:"handoff_unavailable"},503,origin);}
+ const row=rows?.[0];
+ if(!row||Date.parse(row.expires_at)<=Date.now())return reply({error:"handoff_expired"},410,origin);
+ const total=Math.ceil(row.ciphertext.length/PART_CHARS);
+ if(index>=total)return reply({error:"chunk_out_of_range"},400,origin);
+ const fragment=row.ciphertext.slice(index*PART_CHARS,(index+1)*PART_CHARS);
+ traceStep("chunk_ready",{index,total,bytes:fragment.length});
+ return reply({version:2,index,total,fragment},200,origin);
+}
+
 export default {
  async fetch(req){
   const origin=req.headers.get("origin")||"";
@@ -34,6 +97,8 @@ export default {
     catch{return reply({error:"invalid_trace"},400,origin);}
     let payload;
     try{payload=JSON.parse(body);}catch{return reply({error:"invalid_trace"},400,origin);}
+    if(payload?.operation==="get_signed_chunk"||payload?.operation==="release_signed_transfer")
+      return await readHandoff(payload,origin);
     if(payload?.operation!=="sign_trace"||!PAGE_SET.has(payload.page)||
        cleanTrace(payload.trace)==="none"||
        !Array.isArray(payload.events)||payload.events.length<1||payload.events.length>40)
@@ -122,6 +187,16 @@ export default {
   if(signed.signed_sha256 && signed.signed_sha256!==signedHash)
    return fail("signed_hash_mismatch",502);
   step("hash_validated");
+  if(form.get("mode")==="prepare"){
+    try{
+      const handoff=await prepareHandoff(decoded,signedHash,page,trace,step);
+      step("handoff_prepared",{bytes:decoded.byteLength,http:200});
+      return reply(handoff,200,origin);
+    }catch(error){
+      step("handoff_prepare_failed");
+      return fail("handoff_unavailable",503);
+    }
+  }
   step("response_sent",{bytes:decoded.byteLength,http:200});
   return new Response(decoded,{status:200,headers:{
    ...cors(origin),"Content-Type":"application/octet-stream",
