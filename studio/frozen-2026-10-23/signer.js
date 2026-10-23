@@ -6,7 +6,27 @@
  const button=$("downloadSign"), panel=$("signedReady"),download=$("signedDownload"),share=$("shareSigned");
  const logBox=$("signDiagnosticLog"), logHeader=$("signLogSummary");
  const allowed=new Set(["click","consent_ok","generate_begin","generate_ok","placeholder_ok","request_begin","headers_ok","response_read","aea1_ok","ready","download_click","share_begin","share_ok","share_cancel","failure","handoff_ready","chunk_begin","chunk_headers","chunk_received","chunk_retry","chunks_complete","decrypt_begin","decrypt_ok","sha256_ok","release_begin","release_done","release_failed"]);
+ const LOG_KEY="mapkepp.sign.safe-diagnostics.v2";
+ const MAX_LOG_CHARS=140000;
  let signed=null,downloadURL="",trace="",started=0,events=[],session=0,pendingTelemetry=false;
+ const telemetryQueue=[];
+ function appendDiagnostic(line){
+   const previous=logBox.textContent||"";
+   let next=previous?(previous+"\n"+line):line;
+   if(next.length>MAX_LOG_CHARS){
+     const cut=next.length-MAX_LOG_CHARS;
+     const boundary=next.indexOf("\n",cut);
+     next="[Старые записи ограничены по объёму]\n"+next.slice(boundary>=0?boundary+1:cut);
+   }
+   logBox.textContent=next;
+   logBox.scrollTop=logBox.scrollHeight;
+   try{sessionStorage.setItem(LOG_KEY,next);}catch{/* Storage may be disabled; current tab log remains visible. */}
+ }
+ try{
+   const saved=sessionStorage.getItem(LOG_KEY);
+   if(saved)logBox.textContent=saved.slice(-MAX_LOG_CHARS);
+ }catch{/* Browser storage is optional. */}
+
  if(!button || !panel || !download || !share || !logBox)return;
  function errorCode(e){
    if(e?.name==="AbortError")return "timeout";
@@ -30,23 +50,28 @@
    if(event.index!==undefined)fields.push("part="+(event.index+1)+"/"+(event.total||"?"));
    if(event.http!==undefined)fields.push("http="+event.http);
    if(event.code)fields.push("reason="+event.code);
-   logBox.textContent+=(logBox.textContent?"\n":"")+timestamp+" | "+fields.join(" | ");
-   logBox.scrollTop=logBox.scrollHeight;
+   appendDiagnostic(timestamp+" | "+fields.join(" | "));
  }
  async function flushLog(){
-   if(pendingTelemetry||!trace||!events.length)return;
+   // Freeze the attempt's trace and events before async I/O; a later click
+   // cannot mislabel or discard diagnostic events from an earlier attempt.
+   if(trace&&events.length)telemetryQueue.push({attemptTrace:trace,entries:events.splice(0)});
+   if(pendingTelemetry)return;
    pendingTelemetry=true;
    try{
-     while(events.length){
-       const batch=events.splice(0,16);
-       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
-       try{
-         await fetch(ENDPOINT,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
-           cache:"no-store",referrerPolicy:"no-referrer",keepalive:true,
-           headers:{"Content-Type":"text/plain;charset=UTF-8"},
-           body:JSON.stringify({operation:"sign_trace",page,trace,events:batch}),signal:controller.signal});
-       }catch{/* Safe local trace remains visible even if remote telemetry fails. */}
-       finally{clearTimeout(timer);}
+     while(telemetryQueue.length){
+       const job=telemetryQueue.shift();
+       for(let i=0;i<job.entries.length;i+=16){
+         const batch=job.entries.slice(i,i+16);
+         const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),5000);
+         try{
+           await fetch(ENDPOINT,{method:"POST",mode:"cors",credentials:"omit",redirect:"error",
+             cache:"no-store",referrerPolicy:"no-referrer",keepalive:true,
+             headers:{"Content-Type":"text/plain;charset=UTF-8"},
+             body:JSON.stringify({operation:"sign_trace",page,trace:job.attemptTrace,events:batch}),signal:controller.signal});
+         }catch{/* Local safe journal remains accessible if remote telemetry fails. */}
+         finally{clearTimeout(timer);}
+       }
      }
    }finally{pendingTelemetry=false;}
  }
@@ -138,15 +163,22 @@
    started=performance.now();
    trace=crypto.randomUUID();
    events=[];
-   logBox.textContent="";
+   appendDiagnostic("──────── "+new Date().toISOString()+" | "+page+" | попытка "+session+" | "+trace+" ────────");
    if(logHeader)logHeader.textContent="Страница: "+page+" · запрос: "+trace;
    $("signDiagnostics").open=true;
    log("click");
    try{
      if(!$("signConsent").checked){
-       const e=new Error("Разрешите передачу шаблона без токена через Supabase в Shortcuty.");
+       const consent=$("signConsent");
+       const notice=$("signConsentReminder");
+       if(notice)notice.hidden=false;
+       consent?.setAttribute("aria-invalid","true");
+       consent?.focus({preventScroll:false});
+       const e=new Error("Сначала установите галочку согласия рядом с кнопкой подписи. Без согласия отправка не начинается.");
        e.code="consent_missing";throw e;
      }
+     $("signConsentReminder")?.setAttribute("hidden","");
+     $("signConsent")?.removeAttribute("aria-invalid");
      log("consent_ok");
      log("generate_begin");
      const unsigned=window.MapkeppStudio.createUnsigned();
@@ -221,6 +253,17 @@
      log("share_cancel",{code:e?.name==="AbortError"?"cancelled":"share_failed"});
      if(e?.name!=="AbortError")show("Откройте файл через Safari «Загрузки» или «Файлы».",true);
    }finally{void flushLog();}
+ });
+ $("signConsent")?.addEventListener("change",()=>{
+   if($("signConsent").checked){
+     $("signConsentReminder")?.setAttribute("hidden","");
+     $("signConsent").removeAttribute("aria-invalid");
+   }
+ });
+ $("clearSignDiagnostics")?.addEventListener("click",()=>{
+   logBox.textContent="";
+   if(logHeader)logHeader.textContent="Журнал очищен вручную. Новые попытки будут добавляться ниже.";
+   try{sessionStorage.removeItem(LOG_KEY);}catch{}
  });
  $("copySignDiagnostics")?.addEventListener("click",async()=>{
    try{await navigator.clipboard.writeText(logBox.textContent);show("Диагностика подписи скопирована. Токены и названия устройств не записываются.");}
