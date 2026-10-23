@@ -19,6 +19,7 @@ const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
  const context=await browser.newContext({viewport:{width:1280,height:900}});
  const page=await context.newPage();
+ await page.route("**/studio/signer.js*",async route=>route.fulfill({status:200,contentType:"text/javascript",body:await readFile("studio/signer.js","utf8")}));
  const errors=[];
  page.on("pageerror",err=>errors.push(String(err).slice(0,160)));
  await page.goto(base+"?browser-e2e=20261022",{waitUntil:"domcontentloaded",timeout:45000});
@@ -226,6 +227,7 @@ try{
 
  console.log("PASS: token cleanup removes previously displayed devices and cannot preserve stale inventory");
  const home=await context.newPage();
+ await home.route("**/studio/frozen-2026-10-23/signer.js*",async route=>route.fulfill({status:200,contentType:"text/javascript",body:await readFile("studio/frozen-2026-10-23/signer.js","utf8")}));
  const homepageErrors=[];
  home.on("pageerror",err=>homepageErrors.push(String(err).slice(0,80)));
  await home.goto("https://mapkepp.github.io/tools/?browser-e2e=historic-shortcuts",{waitUntil:"domcontentloaded",timeout:45000});
