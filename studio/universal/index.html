@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://ogwcotyorlftmvlalzgc.supabase.co; img-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Mapkepp · Универсальная Apple Команда — эксперимент</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{background:#0e1627;color:#eff5ff;font:16px/1.52 system-ui,-apple-system,Arial,sans-serif;margin:0;padding:24px}main{max-width:800px;margin:auto}
+a{color:#bce0ff}header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.tag{border:1px solid #7186a5;border-radius:20px;padding:4px 9px;color:#cbd7e7;font-size:.78rem}
+h1{font-size:clamp(1.8rem,5vw,2.65rem);line-height:1.15}h2{font-size:1.27rem;margin-top:0}section{background:#19243b;border:1px solid #3f4f6b;border-radius:16px;padding:20px;margin:16px 0}
+button,.button{display:inline-block;font:inherit;color:#12272a;background:#a3e8cf;padding:11px 15px;border:0;border-radius:10px;cursor:pointer;font-weight:650;text-decoration:none;margin:6px 8px 6px 0}button.secondary{background:#314668;color:#eef4ff}button:disabled{opacity:.48;cursor:not-allowed}
+small,.muted{color:#c4d0e0}label{display:block;margin:12px 0}.warning{color:#f3cfab}.ok{color:#a4efc7}.error{color:#ffb7af}
+input[type=file]{padding:12px;border:1px dashed #8292ac;max-width:100%;width:100%;border-radius:9px;background:#111c30}
+.notice{background:#1c3140;border-left:3px solid #88d2c5;padding:12px;border-radius:6px}
+code{overflow-wrap:anywhere}footer{font-size:.85rem;color:#b7c3d6;margin-top:24px}
+</style></head>
+<body><main>
+<header><a href="../">← Экспериментальная Studio</a><span class="tag">Тестовая версия · не готовый релиз</span></header>
+<h1>Универсальная Apple Команда «Мой дом»</h1>
+<p class="muted">Здесь можно получить личный токен Яндекс Умного дома и подписать <strong>экспериментальную нативную Apple Команду v3</strong>. Главный сайт Mapkepp не изменяется.</p>
+<section aria-labelledby="authTitle">
+<h2 id="authTitle">1. Получить токен Яндекса</h2>
+<p>Нажмите кнопку — откроется официальный Яндекс ID. После разрешения доступа вы автоматически вернётесь сюда через проверенный OAuth callback.</p>
+<button id="startAuth">🔐 Войти через Яндекс</button>
+<p id="authState" role="status" aria-live="polite">Токен ещё не получен.</p>
+<button id="copyToken" disabled>📋 Скопировать токен</button>
+<button id="clearToken" class="secondary" disabled>Очистить токен</button>
+<p class="warning"><strong>Важно:</strong> токен предоставляет доступ к устройствам. Он остаётся только в оперативной памяти этой вкладки, не попадает в ссылку, аналитику, GitHub или на сервер подписи. Скопированный токен сохранится в буфере обмена устройства, пока вы его не очистите.</p>
+</section>
+<section aria-labelledby="signTitle">
+<h2 id="signTitle">2. Подписать Apple Команду v3</h2>
+<p>Выберите <code>Mapkepp-My-Home-Native-v3-UNSIGNED.shortcut</code> из ранее скачанного архива разработки. Допускается только контрольный файл v3 с демонстрационными устройствами. Токен внутрь файла не встроен — iPhone попросит его при импорте.</p>
+<label for="unsigned">Неподписанная Apple Команда:</label>
+<input type="file" id="unsigned" accept=".shortcut,application/octet-stream">
+<p id="fileStatus" class="muted" role="status">Файл не выбран.</p>
+<label><input id="thirdPartyConsent" type="checkbox"> Я понимаю, что неподписанный демонстрационный файл будет передан через отдельный сервер Mapkepp стороннему сервису Shortcuty для подписи. Реальный токен не передаётся.</label>
+<button id="signBtn" disabled>✍️ Подписать и скачать</button>
+<p id="signState" role="status" aria-live="polite">Ожидает файл.</p>
+<div id="downloadPanel" hidden><a class="button" id="signedLink">📥 Сохранить подписанную .shortcut</a></div>
+<p class="notice">Это этап проверки подписи и импорта. В v3 — <strong>демонстрационные ID</strong>; до персонализации команда не сможет управлять вашими устройствами. Работу на Apple Watch ещё предстоит проверить.</p>
+</section>
+<section aria-labelledby="nextTitle">
+<h2 id="nextTitle">3. Дальнейшая персонализация</h2>
+<p>Для реальных устройств используйте уже работающий <a href="../">конструктор Studio</a> и сохраните локальный список устройств. Универсальная v3 пока не умеет создавать подписанный персонализированный файл непосредственно из этого каталога. Мы не будем выдавать демонстрационный файл за готовую команду реального дома.</p>
+<p class="muted">Сервис подписи не меняет существующий обработчик основной Studio. Не загружайте файлы с токенами, паролями, cookies и личными данными.</p>
+</section>
+<footer>Mapkepp Tools · неофициальный независимый инструмент, не связанный с Яндексом и Apple · <a href="https://github.com/mapkepp/tools/tree/experiment/voice-universal-2026-10-23/studio/universal" rel="noreferrer">исходники эксперимента</a></footer>
+</main>
+<script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id);
+const CLIENT="e5942ee8886149dfadc84fa3bc89049a";
+const TOKEN_KEY="mapkepp.yandex.oauth.tmp."+CLIENT;
+const TIME_KEY="mapkepp.yandex.oauth.issued."+CLIENT;
+const STATE_KEY="mapkepp.yandex.oauth.state."+CLIENT;
+const PENDING="mapkepp.universal.oauth.pending.v1";
+const LAB_SIGN="https://ogwcotyorlftmvlalzgc.supabase.co/functions/v1/shortcut-sign-lab";
+const HASH="d1126dbc86a4cd57a45652ab86ccb6657752bd98102cdf610e6c1961e78ed4ed";
+let token="",approvedFile=null,busy=false,signedURL="";
+function authStatus(msg,cls=""){ $("authState").textContent=msg;$("authState").className=cls;}
+function signStatus(msg,cls=""){ $("signState").textContent=msg;$("signState").className=cls;}
+function cleanSigned(){if(signedURL){URL.revokeObjectURL(signedURL);signedURL="";}$("downloadPanel").hidden=true;}
+function clearToken(){token="";try{sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TIME_KEY);sessionStorage.removeItem(PENDING);}catch{}$("copyToken").disabled=true;$("clearToken").disabled=true;authStatus("Токен очищен из памяти страницы.");}
+function readReturn(){
+ let v="",when=0;try{v=sessionStorage.getItem(TOKEN_KEY)||"";when=Number(sessionStorage.getItem(TIME_KEY)||0);sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TIME_KEY);}catch{}
+ if(new URLSearchParams(location.search).get("oauth")==="success")history.replaceState(null,"",location.pathname);
+ if(v && /^[A-Za-z0-9_.~+\/=-]{12,4096}$/.test(v) && when>0 && Date.now()-when>=0 && Date.now()-when<300000){
+   token=v;$("copyToken").disabled=false;$("clearToken").disabled=false;authStatus("Токен Яндекса получен и находится в памяти этой вкладки.","ok");
+ }else if(v){authStatus("Полученный токен устарел или отклонён. Повторите вход.","error");}
+}
+$("startAuth").addEventListener("click",()=>{
+ try{
+  const bytes=crypto.getRandomValues(new Uint8Array(24));
+  const state=Array.from(bytes,x=>x.toString(16).padStart(2,"0")).join("");
+  sessionStorage.setItem(STATE_KEY,state);
+  sessionStorage.setItem(PENDING,JSON.stringify({at:Date.now()}));
+  sessionStorage.removeItem(TOKEN_KEY);sessionStorage.removeItem(TIME_KEY);
+  token="";
+  const url=new URL("https://oauth.yandex.ru/authorize");
+  url.searchParams.set("response_type","token");
+  url.searchParams.set("client_id",CLIENT);
+  url.searchParams.set("scope","iot:view iot:control");
+  url.searchParams.set("redirect_uri","https://mapkepp.github.io/tools/oauth/callback.html");
+  url.searchParams.set("state",state);
+  url.searchParams.set("force_confirm","yes");
+  location.assign(url.href);
+ }catch{authStatus("Не удалось открыть авторизацию. Разрешите хранилище вкладки и повторите.","error");}
+});
+$("copyToken").addEventListener("click",async()=>{
+ if(!token)return;
+ try{await navigator.clipboard.writeText(token);authStatus("Токен скопирован в буфер обмена. Никому не пересылайте его.","ok");}
+ catch{authStatus("Копирование не удалось. Проверьте разрешения Safari/браузера.","error");}
+});
+$("clearToken").addEventListener("click",clearToken);
+async function verifyFile(){
+ approvedFile=null;cleanSigned();$("signBtn").disabled=true;
+ const f=$("unsigned").files?.[0];
+ if(!f){$("fileStatus").textContent="Файл не выбран.";return;}
+ if(f.size!==65008){$("fileStatus").textContent="Отклонён: размер не соответствует контрольной v3.";return;}
+ try{
+   const bytes=await f.arrayBuffer();
+   const hex=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)),x=>x.toString(16).padStart(2,"0")).join("");
+   if(hex!==HASH){$("fileStatus").textContent="Отклонён: SHA-256 отличается. Нельзя отправлять непроверенный файл.";return;}
+   approvedFile=f;$("fileStatus").textContent="PASS — проверена точная контрольная сборка v3, токен не содержится.";updateButton();
+ }catch{$("fileStatus").textContent="Не удалось проверить файл.";}
+}
+function updateButton(){$("signBtn").disabled=busy||!approvedFile||!$("thirdPartyConsent").checked;}
+$("unsigned").addEventListener("change",verifyFile);
+$("thirdPartyConsent").addEventListener("change",updateButton);
+$("signBtn").addEventListener("click",async()=>{
+ if(!approvedFile||!$("thirdPartyConsent").checked||busy)return;
+ busy=true;updateButton();cleanSigned();signStatus("Подписание выполняется…");
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),35000);
+ try{
+   const form=new FormData();form.append("file",approvedFile,approvedFile.name);
+   const response=await fetch(LAB_SIGN,{method:"POST",body:form,credentials:"omit",redirect:"error",cache:"no-store",referrerPolicy:"no-referrer",signal:controller.signal});
+   if(!response.ok){let msg="HTTP "+response.status;try{msg=(await response.json()).error||msg;}catch{}throw Error(msg);}
+   const buf=await response.arrayBuffer();
+   if(buf.byteLength<16||buf.byteLength>900000||new TextDecoder().decode(buf.slice(0,4))!=="AEA1")throw Error("Сервис вернул неподписанный или повреждённый файл.");
+   signedURL=URL.createObjectURL(new Blob([buf],{type:"application/octet-stream"}));
+   $("signedLink").href=signedURL;$("signedLink").download="Mapkepp-My-Home-Native-v3-SIGNED.shortcut";
+   $("downloadPanel").hidden=false;
+   signStatus("PASS — формат AEA1 получен. Сохраните файл; импорт на iPhone всё ещё требует проверки.","ok");
+ }catch(e){signStatus("Подписание не завершено: "+(e.name==="AbortError"?"истекло время ожидания":e.message),"error");}
+ finally{clearTimeout(timeout);busy=false;updateButton();}
+});
+window.addEventListener("pagehide",()=>{clearToken();cleanSigned();});
+readReturn();
+})();
+</script></body></html>
