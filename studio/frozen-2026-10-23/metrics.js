@@ -31,7 +31,15 @@
       " просмотров · "+fmt(total.uses)+" действий · ≈"+
       unique(total.uniqueBrowsers)+" уникальных браузеров";
   }
-  async function send(event){
+  // Serialize counters so slower earlier responses cannot overwrite a newer
+  // aggregate total on the page; failures never block later events.
+  let updateChain=Promise.resolve();
+  const send=event=>{
+    const task=updateChain.then(()=>postEvent(event));
+    updateChain=task.catch(()=>{});
+    return task;
+  };
+  async function postEvent(event){
     try{
       const response=await fetch(ENDPOINT,{
         method:"POST",mode:"cors",credentials:"omit",cache:"no-store",
