@@ -10,6 +10,8 @@
 6. GitHub Topics — https://github.com/topics/yandex-smart-home — добавить релевантные topics к репозиторию через настройки GitHub.
 7. Reddit r/shortcuts — https://www.reddit.com/r/shortcuts/ — англоязычное техническое описание с демонстрацией, если правила допускают self-promotion.
 8. Reddit r/homeautomation — https://www.reddit.com/r/homeautomation/ — только содержательная публикация и без навязчивого самопиара.
+Дополнительно — сообщества Apple Shortcuts: Shortcuty (https://apps.apple.com/ru/app/shortcuty/id6751129542) и RoutineHub (https://routinehub.co/). Это каталоги готовых Apple Команд, а не обычных веб-сайтов: размещать там только безопасный, реально протестированный .shortcut, без пользовательских токенов. Для RoutineHub обычно нужен настоящий iCloud share link, получаемый на Apple-устройстве, поэтому публикацию нельзя имитировать.
+
 9. Product Hunt — https://www.producthunt.com/ — после реального iOS end-to-end теста, подготовить понятное англоязычное описание и видео; для публикации нужен аккаунт.
 10. Habr — https://habr.com/ru/ — только реальная техническая статья о реализации, соблюдая правила по саморекламе и AI-созданному тексту; не копировать черновик Дзена. Правила: https://habr.com/ru/docs/help/rules/
 11. Rutube — https://rutube.ru/ — видеодемонстрация реальной установки и запуска с безопасными тестовыми данными.
