@@ -48,6 +48,9 @@ try{
    await page.locator("button.item[data-id='l1']").click();
    await page.locator("#oauthToken").evaluate(el=>{el.value="SECRET_OAUTH_TOKEN";});
    await page.locator("#makeShare").click();
+   const qrHash=await page.evaluate(()=>location.hash);
+   await page.locator(".header-donate").click();
+   assert.equal(await page.evaluate(()=>location.hash),qrHash,"Donation scroll must preserve QR and OAuth return hash");
    await page.waitForFunction(name=>document.getElementById("siteMetricsStatus").textContent.includes(name+": ")&&
       document.getElementById("siteMetricsStatus").textContent.includes("действий"),id==="home"?"Главная":"Студия");
    await page.waitForTimeout(150);
