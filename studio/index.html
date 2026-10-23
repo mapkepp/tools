@@ -127,6 +127,7 @@ details{border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:
 <p><strong>Что будет отправлено Яндексу</strong></p><pre id="jsonPreview"></pre>
 <div class="divider"></div>
 <label><input id="signConsent" type="checkbox" style="width:auto"> Разрешаю передать команду <strong>без токена</strong> через обработчик Mapkepp (Supabase) во внешний сервис подписи Shortcuty. Подписанный результат на срок до 10 минут шифруется AES-GCM в Supabase, ключ остаётся только в браузере; после получения временная копия удаляется</label>
+<p class="hint">При обычной подписи OAuth-токен не отправляется, но внешний Shortcuty получает шаблон команды с её названием и ID выбранного устройства. QR-ссылка тоже содержит название и ID — не публикуйте её, если это нежелательно.</p>
 <p id="signConsentReminder" class="notice" role="alert" hidden style="margin-top:8px;outline:2px solid #e98978;padding:10px"><strong>Перед подписанием отметьте галочку согласия выше.</strong> Команда не будет отправлена, пока вы не разрешите передачу шаблона без токена.</p>
 <p class="hint">При подписи сервер увидит выбранный объект и действие, но не пароль и не OAuth-токен.</p>
 <div class="flex"><button type="button" class="primary" id="downloadSign">📥 Подписать и скачать</button><button type="button" id="downloadUnsigned">Скачать файл без подписи</button></div>
