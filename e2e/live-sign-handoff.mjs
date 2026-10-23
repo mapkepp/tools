@@ -1,8 +1,10 @@
 import {chromium} from "playwright";
 import assert from "node:assert/strict";
+const __mockMetrics=async route=>route.fulfill({status:200,headers:{"access-control-allow-origin":"https://mapkepp.github.io","content-type":"application/json"},body:JSON.stringify({pages:{home:{visits:0,uses:0},studio:{visits:0,uses:0}},total:{visits:0,uses:0}})});
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
  const page=await browser.newPage();
+ await page.route("**/functions/v1/site-metrics",__mockMetrics);
  await page.goto("https://mapkepp.github.io/tools/studio/?signed-handoff-direct-test=1",{waitUntil:"domcontentloaded"});
  await page.locator("#demoButton").click();
  await page.locator("button.item[data-id='l1']").click();
