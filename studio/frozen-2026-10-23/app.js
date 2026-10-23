@@ -651,6 +651,39 @@ $("downloadSign").addEventListener("click",()=>{
 // Only metadata about a chosen action goes into a share link. Never an OAuth token.
 window.MapkeppStudio = Object.freeze({
  createUnsigned(){return file("");},
+ hasInventory(){return !!data&&!example;},
+ restoreInventory(raw){loadRaw(raw);},
+ getInventory(){
+   if(!data||example)throw Error("Сначала загрузите реальные устройства. Демонстрационный список не сохраняется.");
+   // Export only useful control capabilities and hierarchy. No auth/profile metadata.
+   const ident=x=>({id:x.id,name:x.name});
+   const relation=x=>({...ident(x),...(typeof x.household_id==="string"?{household_id:x.household_id}:{})});
+   const cap=raw=>{
+     const kind=raw?.type,p=raw?.parameters||{};
+     if(!["devices.capabilities.on_off","devices.capabilities.range","devices.capabilities.mode","devices.capabilities.color_setting"].includes(kind))return null;
+     const params={};
+     if(typeof p.instance==="string")params.instance=p.instance;
+     if(p.range && Number.isFinite(p.range.min)&&Number.isFinite(p.range.max))
+       params.range={min:p.range.min,max:p.range.max,...(Number.isFinite(p.range.precision)?{precision:p.range.precision}:{})};
+     if(p.temperature_k&&Number.isFinite(p.temperature_k.min)&&Number.isFinite(p.temperature_k.max))
+       params.temperature_k={min:p.temperature_k.min,max:p.temperature_k.max,...(Number.isFinite(p.temperature_k.precision)?{precision:p.temperature_k.precision}:{})};
+     if(Array.isArray(p.modes))params.modes=p.modes.filter(m=>m&&typeof m.value==="string").map(m=>({value:m.value}));
+     return {type:kind,parameters:params};
+   };
+   const caps=x=>Array.isArray(x.capabilities)?x.capabilities.map(cap).filter(Boolean):[];
+   const ids=x=>Array.isArray(x.devices)?x.devices.filter(v=>typeof v==="string"):[];
+   return {
+     status:"ok",
+     households:data.households.map(ident),
+     rooms:data.rooms.map(x=>({...relation(x),devices:ids(x)})),
+     devices:data.devices.map(x=>({...relation(x),...(typeof x.room==="string"?{room:x.room}:{}),
+       ...(typeof x.type==="string"?{type:x.type}:{}),capabilities:caps(x)})),
+     groups:data.groups.map(x=>({...relation(x),...(typeof x.type==="string"?{type:x.type}:{}),
+       devices:ids(x),capabilities:caps(x)})),
+     scenarios:data.scenarios.map(x=>({...ident(x),is_active:x.is_active!==false}))
+   };
+ },
+
  getShareData(){
    const r=request(), a=currentAction();
    const value = a.cap === "scenario" ? null : (selected.kind === "group" ? r.body.actions[0].state.value : r.body.devices[0].actions[0].state.value);
