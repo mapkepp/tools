@@ -203,6 +203,8 @@ try{
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/chunk_retry/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/decrypt_ok/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/sha256_ok/);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/release_done/);
+ assert.match(await page.locator("#signDiagnosticLog").textContent(),/ready/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/studio.*generate_ok/);
  assert.match(await page.locator("#signDiagnosticLog").textContent(),/aea1_ok/);
 
@@ -288,6 +290,7 @@ try{
  assert.match(await home.locator("#signDiagnosticLog").textContent(),/home.*aea1_ok/);
  assert.match(await home.locator("#signDiagnosticLog").textContent(),/chunks_complete/);
  assert.match(await home.locator("#signDiagnosticLog").textContent(),/decrypt_ok/);
+ assert.match(await home.locator("#signDiagnosticLog").textContent(),/ready/);
  console.log("PASS: frozen homepage signs via verified relay only once, logs as home");
 
  await home.locator("#makeShare").click();
