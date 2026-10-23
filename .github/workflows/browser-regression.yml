@@ -8,6 +8,7 @@ on:
       - 'e2e/browser-regression.mjs'
       - 'e2e/live-sign-smoke.mjs'
       - 'e2e/live-sign-handoff.mjs'
+      - 'e2e/sign-journal-retention.mjs'
 
 permissions:
   contents: read
@@ -40,6 +41,8 @@ jobs:
           echo 'PASS: token-free production telemetry accepted by Supabase'
       - name: Check published UI with fabricated data only
         run: node e2e/browser-regression.mjs
+      - name: Verify safe log persists across clicks reload and home-to-studio navigation
+        run: node e2e/sign-journal-retention.mjs
       - name: Confirm real external signing with a synthetic tokenless Shortcut
         run: node e2e/live-sign-smoke.mjs
       - name: Prove encrypted short-chunk handoff through deployed Supabase with synthetic Shortcut
