@@ -65,6 +65,9 @@
      const entry=await run("readonly",store=>store.get(KEY));
      if(!entry){if(manual)setMessage("Локально сохранённого списка пока нет.");return;}
      if(entry.version!==1||typeof entry.json!=="string"||entry.json.length>2800000)throw Error("Сохранённый список повреждён.");
+     // An asynchronous IndexedDB read must never overwrite a device list,
+     // QR config or demonstration that the user opened after page load.
+     if(!manual && window.MapkeppStudio.hasAnyData())return;
      window.MapkeppStudio.restoreInventory(entry.json);
      setMessage("Загружено из браузерной копии ("+fmt(entry)+"). Сеть и API Яндекса не использовались; данные могли устареть.");
    }catch(e){setMessage("Не удалось открыть локальный список: "+e.message,true);}
