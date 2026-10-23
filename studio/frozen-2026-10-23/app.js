@@ -652,6 +652,7 @@ $("downloadSign").addEventListener("click",()=>{
 window.MapkeppStudio = Object.freeze({
  createUnsigned(){return file("");},
  hasInventory(){return !!data&&!example;},
+ hasAnyData(){return !!data;},
  restoreInventory(raw){loadRaw(raw);},
  getInventory(){
    if(!data||example)throw Error("Сначала загрузите реальные устройства. Демонстрационный список не сохраняется.");
