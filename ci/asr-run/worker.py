@@ -99,8 +99,16 @@ def run():
         name=row['name']
         if not name.startswith('piece_') or not name.endswith('.bin') or '/' in name or '..' in name:
             raise RuntimeError('Invalid encrypted chunk name')
-        ct=read_remote(ROOT+'/data/'+name)
-        if ct is None or sha(ct)!=row['cipher_sha256']:raise RuntimeError('Missing or corrupted encrypted input')
+        ct=None
+        for attempt in range(24):
+            ct=read_remote(ROOT+'/data/'+name)
+            if ct is not None and sha(ct)==row['cipher_sha256']:
+                break
+            if attempt in (0,8,16):
+                print('WAIT_ENCRYPTED_CHUNK',name,'present',ct is not None,'actual_len',len(ct) if ct is not None else 0,'expected_len',row.get('length'),flush=True)
+            time.sleep(5)
+        else:
+            raise RuntimeError('Encrypted chunk missing/integrity mismatch after retries, name='+name)
         aad=(session+'/'+name).encode('ascii')
         plaintext=aes.decrypt(ub64(row['nonce']),ct,aad)
         frames.setdefault(int(row['part']),[]).append((int(row['index']),plaintext))
