@@ -1,1 +1,1 @@
-{"mode": "test", "protocol": "X25519-HKDF-SHA256-AESGCM-v1", "public_key": "72M8zGG9oXZxrJnayx230i2e1C5eG/vuVXpSLvYO9U0=", "session_id": "948a1091b5b189129e25715782f6a568", "start_sha": "b854189c58a3f0ce999b1a0d94a161bf1a6e9ac8"}
+{"mode": "real", "protocol": "X25519-HKDF-SHA256-AESGCM-v1", "public_key": "9yTcrfKNJl1paDS4LkeznAPwWE3ugcpvaAmysjYR6FQ=", "session_id": "a67cbab7a1f5ca633a5b7cb4563e12db", "start_sha": "bc8b768df7cc98721fe340f74db2b7a81be06a25"}
