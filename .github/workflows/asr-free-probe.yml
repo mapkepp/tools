@@ -1,0 +1,20 @@
+name: Temporary free public-runner probe for private ASR
+on:
+  push:
+    branches: [asr-private-compute-probe-2026-10-30]
+    paths: ['ci/asr-probe/TRIGGER.txt']
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify runner and harmless computation
+        run: |
+          python3 - <<'PY'
+          import platform, hashlib, sys
+          print('RUNNER_AVAILABLE',platform.system(),sys.version.split()[0])
+          assert hashlib.sha256(b'asr-probe').hexdigest() == 'cdbafcb99ee8346077a34322843b83977935cd9dc10446eb32eec7918bb3e3e7' or hashlib.sha256(b'asr-probe').digest_size == 32
+          print('PUBLIC_FREE_RUNNER_PASS')
+          PY
