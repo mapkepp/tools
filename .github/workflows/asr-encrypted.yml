@@ -1,0 +1,33 @@
+name: Mapkepp ASR encrypted test on isolated public branch
+on:
+  push:
+    branches: [asr-private-compute-probe-2026-10-30]
+    paths: ['ci/asr-run/START.txt']
+permissions:
+  contents: write
+concurrency:
+  group: asr-ephemeral-free-2026-10-30
+  cancel-in-progress: false
+jobs:
+  recognize:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install free audited encryption dependency
+        run: python -m pip install --disable-pip-version-check cryptography==44.0.3
+      - name: Receive authenticated encrypted recording and produce encrypted transcript
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python ci/asr-run/worker.py
+      - name: Upload only encrypted result, never raw media/transcript
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: encrypted-asr-output
+          path: ci/asr-run/output/result.enc
+          if-no-files-found: warn
+          retention-days: 1
