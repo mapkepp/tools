@@ -1,0 +1,1 @@
+This is a harmless public runner probe. No audio, credentials or private data.
